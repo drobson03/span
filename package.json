@@ -2,19 +2,28 @@
 	"name": "span",
 	"type": "module",
 	"scripts": {
-		"dev": "vinxi dev",
+	  "db:push": "drizzle-kit push:sqlite",
+	  "dev": "vinxi dev",
 		"build": "vinxi build",
 		"start": "vinxi start",
 		"version": "vinxi version"
 	},
 	"dependencies": {
-		"@solidjs/meta": "^0.29.3",
+	  "@epic-web/remember": "^1.0.2",
+	  "@libsql/client": "^0.5.6",
+	  "@solidjs/meta": "^0.29.3",
 		"@solidjs/router": "^0.13.1",
 		"@solidjs/start": "1.0.0-rc.0",
+	  "drizzle-orm": "^0.30.4",
+	  "nanoid": "^5.0.6",
 		"solid-js": "^1.8.16",
+	  "valibot": "^0.30.0",
 		"vinxi": "^0.3.10"
 	},
 	"engines": {
 		"node": ">=20"
-	}
+	},
+  "devDependencies": {
+    "drizzle-kit": "^0.20.14"
+  }
 }
