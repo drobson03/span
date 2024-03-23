@@ -16,6 +16,7 @@
 		"@solidjs/router": "^0.13.1",
 		"@solidjs/start": "1.0.0-rc.0",
 	  "arctic": "^1.2.1",
+	  "clsx": "^2.1.0",
 	  "dayjs": "^1.11.10",
 	  "drizzle-orm": "^0.30.4",
 	  "lucia": "^3.1.1",
@@ -38,6 +39,8 @@
     "tailwindcss": "^3.4.1"
   },
   "prettier": {
-    "plugins": ["prettier-plugin-tailwindcss"]
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
   }
 }
