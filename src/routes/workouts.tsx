@@ -1,5 +1,5 @@
 import { Title } from "@solidjs/meta";
-import { createAsync } from "@solidjs/router";
+import { cache, createAsync } from "@solidjs/router";
 import { For } from "solid-js";
 import { db } from "~/server/db";
 import { getAuthenticatedUser } from "~/server/utils";
@@ -10,14 +10,29 @@ function chunk<T>(array: T[] = [], size: number): T[][] {
   );
 }
 
+const getWorkouts = cache(async () => {
+  "use server";
+  const user = await getAuthenticatedUser();
+  return await db.query.workout.findMany({
+    orderBy: (workouts, { desc }) => [desc(workouts.date)],
+    where: (workouts, { eq }) => eq(workouts.userId, user.id),
+    with: {
+      exercises: {
+        with: {
+          exerciseType: true,
+          sets: true,
+        },
+      },
+    },
+  });
+}, "workouts");
+
 export const route = {
   load: () => getWorkouts(),
 };
 
 export default function Workouts() {
   const workouts = createAsync(() => getWorkouts());
-
-  const chunkedWorkouts = chunk(workouts(), 5);
 
   return (
     <>
@@ -27,7 +42,7 @@ export default function Workouts() {
           <h1 class="text-4xl font-semibold">Workouts</h1>
         </header>
         <div class="flex flex-col divide-y md:grid md:grid-cols-5 md:place-items-stretch">
-          <For each={chunkedWorkouts}>
+          <For each={chunk(workouts(), 5)}>
             {(workouts) => (
               <div class="divide-y md:col-span-5 md:grid md:grid-cols-subgrid md:place-items-stretch md:divide-x md:divide-y-0">
                 <For each={workouts}>
@@ -69,21 +84,4 @@ export default function Workouts() {
       </div>
     </>
   );
-}
-
-async function getWorkouts() {
-  "use server";
-  const user = await getAuthenticatedUser();
-  return await db.query.workout.findMany({
-    orderBy: (workouts, { desc }) => [desc(workouts.date)],
-    where: (workouts, { eq }) => eq(workouts.userId, user.id),
-    with: {
-      exercises: {
-        with: {
-          exerciseType: true,
-          sets: true,
-        },
-      },
-    },
-  });
 }
