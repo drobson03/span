@@ -1,4 +1,9 @@
 {
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts"
+  ],
 	"compilerOptions": {
 		"target": "ESNext",
 		"module": "ESNext",
