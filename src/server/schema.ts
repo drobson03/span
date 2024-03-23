@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -19,8 +19,12 @@ export const workout = sqliteTable(
       .references(() => user.id),
     notes: text("notes"),
     date: integer("date", { mode: "timestamp" }).notNull(),
-    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch())`),
   },
   (workout) => ({
     userIdIdx: index("workout_user_id_idx").on(workout.userId),
@@ -123,8 +127,15 @@ export const setRelations = relations(set, ({ one }) => ({
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  googleId: text("google_id").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
 });
 
 export type User = typeof user.$inferSelect;
