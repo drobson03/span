@@ -25,6 +25,7 @@ export const lucia = remember("lucia", () => {
       return {
         name: attributes.name,
         googleId: attributes.googleId,
+        email: attributes.email,
       };
     },
   });
@@ -33,6 +34,6 @@ export const lucia = remember("lucia", () => {
 declare module "lucia" {
   interface Register {
     Lucia: typeof lucia;
-    DatabaseUserAttributes: Pick<User, "name" | "googleId">;
+    DatabaseUserAttributes: Pick<User, "name" | "googleId" | "email">;
   }
 }
