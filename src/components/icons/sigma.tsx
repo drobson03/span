@@ -1,8 +1,4 @@
-export default function SquareMoveUpRightIcon({
-  class: className,
-}: {
-  class?: string;
-}) {
+export default function MoveUpRightIcon({ class: className }: { class?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
