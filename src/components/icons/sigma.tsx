@@ -1,8 +1,4 @@
-export default function SquareSigmaIcon({
-  class: className,
-}: {
-  class?: string;
-}) {
+export default function SigmaIcon({ class: className }: { class?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
