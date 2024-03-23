@@ -12,6 +12,7 @@ export default function App() {
           <Suspense>{props.children}</Suspense>
         </MetaProvider>
       )}
+      explicitLinks
     >
       <FileRoutes />
     </Router>
