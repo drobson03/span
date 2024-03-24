@@ -142,7 +142,7 @@ export default function WorkoutForm() {
                   <FieldInfo field={datetimeField()} />
                 </div>
                 <input
-                  class="col-span-2 border-gray-200"
+                  class="col-span-2 border-gray-200 focus:border-black focus:ring-black"
                   id={datetimeField().name}
                   name={datetimeField().name}
                   value={datetimeField().state.value}
@@ -167,7 +167,7 @@ export default function WorkoutForm() {
                   <FieldInfo field={notesField()} />
                 </div>
                 <textarea
-                  class="col-span-2 border-gray-200"
+                  class="col-span-2 border-gray-200 focus:border-black focus:ring-black"
                   id={notesField().name}
                   name={notesField().name}
                   value={notesField().state.value}
@@ -216,7 +216,7 @@ export default function WorkoutForm() {
                             Exercise
                           </label>
                           <select
-                            class="border-gray-200"
+                            class="border-gray-200 focus:border-black focus:ring-black"
                             onInput={(e) =>
                               exerciseTypeIdField().handleChange(
                                 e.currentTarget.value,
@@ -254,7 +254,7 @@ export default function WorkoutForm() {
                             <label for={weightField().name}>Weight</label>
                             <input
                               type="text"
-                              class="border-gray-200"
+                              class="border-gray-200 focus:border-black focus:ring-black"
                               step={0.01}
                               onInput={(e) =>
                                 weightField().handleChange(
@@ -283,7 +283,7 @@ export default function WorkoutForm() {
                             </label>
                             <input
                               type="number"
-                              class="border-gray-200"
+                              class="border-gray-200 focus:border-black focus:ring-black"
                               onInput={(e) =>
                                 targetRepsField().handleChange(
                                   Number(e.currentTarget.value),
@@ -309,7 +309,7 @@ export default function WorkoutForm() {
                         <div class="flex flex-col gap-1">
                           <label for={notesField().name}>Notes</label>
                           <textarea
-                            class="border-gray-200"
+                            class="border-gray-200 focus:border-black focus:ring-black"
                             onInput={(e) =>
                               notesField().handleChange(e.currentTarget.value)
                             }
