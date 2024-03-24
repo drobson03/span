@@ -14,7 +14,7 @@ dayjs.extend(isoWeek);
 
 const getWorkoutsByDay = cache(async (month: string) => {
   "use server";
-  const monthDate = dayjs(month, "YYYY-MM");
+  const monthDate = dayjs(month, "YYYY-MM").date(1);
   const user = await getAuthenticatedUser();
   const workouts = await db.query.workout.findMany({
     orderBy: (workouts, { desc }) => [desc(workouts.date)],
@@ -60,7 +60,9 @@ export default function Calendar() {
 
   const workouts = createAsync(() => getWorkoutsByDay(params.month));
 
-  const month = createMemo(() => dayjs(params.month, "YYYY-MM") ?? dayjs());
+  const month = createMemo(
+    () => dayjs(params.month, "YYYY-MM").date(1) ?? dayjs().date(1),
+  );
   const dates = createMemo(() => chunk(getDatesForCalendarView(month()), 7));
 
   return (
