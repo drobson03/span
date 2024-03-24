@@ -15,6 +15,9 @@
 	  "@solidjs/meta": "^0.29.3",
 		"@solidjs/router": "^0.13.1",
 		"@solidjs/start": "1.0.0-rc.0",
+	  "@tanstack/form-core": "^0.16.2",
+	  "@tanstack/solid-form": "^0.16.2",
+	  "@tanstack/valibot-form-adapter": "^0.16.2",
 	  "arctic": "^1.2.1",
 	  "dayjs": "^1.11.10",
 	  "drizzle-orm": "^0.30.4",
@@ -42,5 +45,11 @@
     "plugins": [
       "prettier-plugin-tailwindcss"
     ]
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@tanstack/solid-form@0.16.2": "patches/@tanstack__solid-form@0.16.2.patch",
+      "@tanstack/form-core@0.16.2": "patches/@tanstack__form-core@0.16.2.patch"
+    }
   }
 }
