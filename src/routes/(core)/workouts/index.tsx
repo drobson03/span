@@ -33,8 +33,8 @@ export default function Workouts() {
     <>
       <Title>Workouts</Title>
       <div class="md:flex-[80_1_0]">
-        <header class="hidden flex-row items-center justify-between border-b p-4 md:flex md:px-6">
-          <h1 class="text-4xl font-semibold">Workouts</h1>
+        <header class="flex flex-row items-center justify-between border-b p-4 md:px-6">
+          <h1 class="hidden text-4xl font-semibold md:block">Workouts</h1>
           <div class="flex flex-row items-center gap-2">
             <A
               href="/workouts/new"
