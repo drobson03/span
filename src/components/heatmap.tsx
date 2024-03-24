@@ -61,7 +61,7 @@ export default function Heatmap() {
           {(date) => (
             <div
               class={twMerge(
-                "h-2.5 w-2.5 border",
+                "size-2.5 border",
                 workouts()?.[date.format("YYYY-MM-DD")]?.length && "bg-black",
                 today().isSame(date, "day") && "border-black",
               )}

@@ -61,9 +61,13 @@ export default function Workouts() {
                               </p>
                               <p class="text-gray-600">{exercise.notes}</p>
                               <ul class="mt-2 flex flex-row space-x-2">
-                                {exercise.sets
-                                  .map((set) => set.reps)
-                                  .join(", ")}
+                                <For each={exercise.sets}>
+                                  {(set) => (
+                                    <li class="size-6 border text-center">
+                                      {set.reps}
+                                    </li>
+                                  )}
+                                </For>
                               </ul>
                             </li>
                           )}

@@ -86,7 +86,7 @@ export default function Calendar() {
               href={`/calendar/${month().subtract(1, "month").format("YYYY-MM")}`}
               class="border p-1 transition-colors hover:bg-gray-50"
             >
-              <ChevronLeftIcon class="h-6 w-6" />
+              <ChevronLeftIcon class="size-6" />
             </A>
             <A
               href={`/calendar/${dayjs().format("YYYY-MM")}`}
@@ -99,7 +99,7 @@ export default function Calendar() {
               href={`/calendar/${month().add(1, "month").format("YYYY-MM")}`}
               class="border p-1 transition-colors hover:bg-gray-50"
             >
-              <ChevronRightIcon class="h-6 w-6" />
+              <ChevronRightIcon class="size-6" />
             </A>
           </div>
         </header>
