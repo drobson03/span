@@ -26,7 +26,7 @@ function SidebarLink({
       inactiveClass="hover:bg-gray-100"
       end={end}
     >
-      <Icon class="h-6 w-6" />
+      <Icon class="size-6" />
       {children}
     </A>
   );
@@ -38,7 +38,7 @@ export default function Sidebar() {
   return (
     <div class="flex flex-col space-y-4 border-b bg-white pb-4 text-gray-900 md:flex-[20_1_0] md:border-b-0 md:border-r md:pb-0 2xl:flex-[10_1_0]">
       <div class="flex items-center space-x-2 border-b p-4">
-        <MoveUpRightIcon class="h-10 w-10" />
+        <MoveUpRightIcon class="size-10" />
         <h1 class="text-2xl font-semibold text-black">Span</h1>
       </div>
       <div class="flex items-center space-x-4 px-4 md:px-8">

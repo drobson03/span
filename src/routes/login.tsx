@@ -7,7 +7,7 @@ export default function Login() {
       <Title>Login</Title>
       <div class="flex w-full flex-col items-center border p-4 sm:max-w-sm md:px-6">
         <div class="mb-2 flex w-full items-center justify-center space-x-2 p-4">
-          <MoveUpRightIcon class="h-10 w-10" />
+          <MoveUpRightIcon class="size-10" />
           <h1 class="text-2xl font-semibold text-black">Span</h1>
         </div>
         <a
@@ -20,7 +20,7 @@ export default function Login() {
             height="24"
             viewBox="0 0 24 24"
             width="24"
-            class="h-8 w-8"
+            class="size-8"
           >
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
