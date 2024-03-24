@@ -1,0 +1,151 @@
+diff --git a/dist/esm/utils.js b/dist/esm/utils.js
+index 49aaa08bc681dbcd6246ef4ed311ad88f642228a..4426e52bb990cc9fca357ec2c18cd4d63f2408c5 100644
+--- a/dist/esm/utils.js
++++ b/dist/esm/utils.js
+@@ -21,19 +21,19 @@ function setBy(obj, _path, updater) {
+       if (typeof parent === "object") {
+         return {
+           ...parent,
+-          [key]: doSet(parent[key])
++          [key]: doSet(parent[key]),
+         };
+       }
+       return {
+-        [key]: doSet()
++        [key]: doSet(),
+       };
+     }
+     if (Array.isArray(parent) && key !== void 0) {
+       const prefix = parent.slice(0, key);
+       return [
+-        ...prefix.length ? prefix : new Array(key),
++        ...(prefix.length ? prefix : new Array(key)),
+         doSet(parent[key]),
+-        ...parent.slice(key + 1)
++        ...parent.slice(key + 1),
+       ];
+     }
+     return [...new Array(key), doSet()];
+@@ -43,8 +43,7 @@ function setBy(obj, _path, updater) {
+ function deleteBy(obj, _path) {
+   const path = makePathArray(_path);
+   function doDelete(parent) {
+-    if (!parent)
+-      return;
++    if (!parent) return;
+     if (path.length === 1) {
+       const finalPath = path[0];
+       if (Array.isArray(parent) && typeof finalPath === "number") {
+@@ -58,7 +57,7 @@ function deleteBy(obj, _path) {
+       if (typeof parent === "object") {
+         return {
+           ...parent,
+-          [key]: doDelete(parent[key])
++          [key]: doDelete(parent[key]),
+         };
+       }
+     }
+@@ -69,9 +68,9 @@ function deleteBy(obj, _path) {
+         }
+         const prefix = parent.slice(0, key);
+         return [
+-          ...prefix.length ? prefix : new Array(key),
++          ...(prefix.length ? prefix : new Array(key)),
+           doDelete(parent[key]),
+-          ...parent.slice(key + 1)
++          ...parent.slice(key + 1),
+         ];
+       }
+     }
+@@ -79,6 +78,8 @@ function deleteBy(obj, _path) {
+   }
+   return doDelete(obj);
+ }
++const reFindOpenBrackets = /\[/gm;
++const reFindClosingBrackets = /\]/gm;
+ const reFindNumbers0 = /^(\d*)$/gm;
+ const reFindNumbers1 = /\.(\d*)\./gm;
+ const reFindNumbers2 = /^(\d*)\./gm;
+@@ -90,12 +91,21 @@ function makePathArray(str) {
+   if (typeof str !== "string") {
+     throw new Error("Path must be a string.");
+   }
+-  return str.replace("[", ".").replace("]", "").replace(reFindNumbers0, intReplace).replace(reFindNumbers1, `.${intReplace}.`).replace(reFindNumbers2, `${intReplace}.`).replace(reFindNumbers3, `.${intReplace}`).replace(reFindMultiplePeriods, ".").split(".").map((d) => {
+-    if (d.indexOf(intPrefix) === 0) {
+-      return parseInt(d.substring(intPrefix.length), 10);
+-    }
+-    return d;
+-  });
++  return str
++    .replace(reFindOpenBrackets, ".")
++    .replace(reFindClosingBrackets, "")
++    .replace(reFindNumbers0, intReplace)
++    .replace(reFindNumbers1, `.${intReplace}.`)
++    .replace(reFindNumbers2, `${intReplace}.`)
++    .replace(reFindNumbers3, `.${intReplace}`)
++    .replace(reFindMultiplePeriods, ".")
++    .split(".")
++    .map((d) => {
++      if (d.indexOf(intPrefix) === 0) {
++        return parseInt(d.substring(intPrefix.length), 10);
++      }
++      return d;
++    });
+ }
+ function isNonEmptyArray(obj) {
+   return !(Array.isArray(obj) && obj.length === 0);
+@@ -108,23 +118,23 @@ function getAsyncValidatorArray(cause, options) {
+     onSubmitAsync,
+     onBlurAsyncDebounceMs,
+     onChangeAsyncDebounceMs,
+-    onSubmitAsyncDebounceMs
++    onSubmitAsyncDebounceMs,
+   } = options.validators || {};
+   const defaultDebounceMs = asyncDebounceMs ?? 0;
+   const changeValidator = {
+     cause: "change",
+     validate: onChangeAsync,
+-    debounceMs: onChangeAsyncDebounceMs ?? defaultDebounceMs
++    debounceMs: onChangeAsyncDebounceMs ?? defaultDebounceMs,
+   };
+   const blurValidator = {
+     cause: "blur",
+     validate: onBlurAsync,
+-    debounceMs: onBlurAsyncDebounceMs ?? defaultDebounceMs
++    debounceMs: onBlurAsyncDebounceMs ?? defaultDebounceMs,
+   };
+   const submitValidator = {
+     cause: "submit",
+     validate: onSubmitAsync,
+-    debounceMs: onSubmitAsyncDebounceMs ?? defaultDebounceMs
++    debounceMs: onSubmitAsyncDebounceMs ?? defaultDebounceMs,
+   };
+   switch (cause) {
+     case "submit":
+@@ -145,16 +155,11 @@ function getSyncValidatorArray(cause, options) {
+   const submitValidator = { cause: "submit", validate: onSubmit };
+   const serverValidator = {
+     cause: "server",
+-    validate: () => void 0
++    validate: () => void 0,
+   };
+   switch (cause) {
+     case "submit":
+-      return [
+-        changeValidator,
+-        blurValidator,
+-        submitValidator,
+-        serverValidator
+-      ];
++      return [changeValidator, blurValidator, submitValidator, serverValidator];
+     case "server":
+       return [serverValidator];
+     case "blur":
+@@ -171,6 +176,6 @@ export {
+   getBy,
+   getSyncValidatorArray,
+   isNonEmptyArray,
+-  setBy
++  setBy,
+ };
+ //# sourceMappingURL=utils.js.map
