@@ -10,5 +10,8 @@ export const db = remember("drizzle", () => {
     authToken: env.DATABASE_AUTH_TOKEN,
   });
 
-  return drizzle(client, { schema });
+  return drizzle(client, {
+    schema,
+    logger: process.env.NODE_ENV !== "production",
+  });
 });
