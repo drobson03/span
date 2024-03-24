@@ -1,5 +1,11 @@
 import { Title } from "@solidjs/meta";
-import { A, cache, createAsync, useParams } from "@solidjs/router";
+import {
+  A,
+  type RouteDefinition,
+  cache,
+  createAsync,
+  useParams,
+} from "@solidjs/router";
 import dayjs, { type Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { For, Show, createMemo } from "solid-js";
@@ -55,6 +61,10 @@ function getDatesForCalendarView(month: Dayjs) {
   return dates;
 }
 
+export const route = {
+  load: ({ params }) => getWorkoutsByDay(params.month),
+} satisfies RouteDefinition;
+
 export default function Calendar() {
   const params = useParams();
 
@@ -96,12 +106,12 @@ export default function Calendar() {
         <div class="flex flex-col gap-[0.0625rem] border-b bg-gray-200 md:grid md:grid-cols-7 md:place-items-stretch">
           <For each={dates()}>
             {(weekDays) => (
-              <div class="gap-[0.0625rem] md:col-span-7 md:grid md:grid-cols-subgrid md:place-items-stretch">
+              <div class="gap-[0.0625rem] divide-y md:col-span-7 md:grid md:grid-cols-subgrid md:place-items-stretch md:divide-y-0">
                 <For each={weekDays}>
                   {(day) => (
                     <div
                       class={twMerge(
-                        "group flex min-h-32 items-center justify-between bg-white p-4 transition-colors hover:cursor-pointer hover:bg-gray-50 md:px-6",
+                        "group flex items-center justify-between bg-white p-4 transition-colors hover:cursor-pointer hover:bg-gray-50 md:min-h-32 md:px-6",
                         day.isSame(dayjs(), "day") &&
                           "bg-black text-white hover:bg-black",
                         !day.isSame(month(), "month") &&
