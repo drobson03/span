@@ -80,7 +80,7 @@ export default function Calendar() {
             </A>
             <A
               href={`/calendar/${dayjs().format("YYYY-MM")}`}
-              class="w-36 border px-2 py-1 text-center transition-colors hover:bg-gray-50"
+              class="w-40 border px-2 py-1 text-center transition-colors hover:bg-gray-50"
               title="Return to current month"
             >
               {month().format("MMMM YYYY")}
