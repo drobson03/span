@@ -246,7 +246,7 @@ export default function WorkoutForm() {
                       <form.Field
                         name={`exercises[${i}].weight`}
                         validators={{
-                          onBlur: coerce(number([minValue(0)]), Number),
+                          onBlur: coerce(number(), Number),
                         }}
                       >
                         {(weightField) => (
