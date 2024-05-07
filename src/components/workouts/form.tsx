@@ -5,7 +5,8 @@ import {
   redirect,
   useAction,
 } from "@solidjs/router";
-import { type FieldApi, createForm } from "@tanstack/solid-form";
+import { type FieldApi } from "@tanstack/solid-form/src/index";
+import { createForm } from "@tanstack/solid-form/src/createForm";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import dayjs from "dayjs";
 import { Index, Show } from "solid-js";
