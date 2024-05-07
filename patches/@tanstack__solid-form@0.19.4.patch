@@ -1,0 +1,24 @@
+diff --git a/package.json b/package.json
+index 3853310619e361b919dc0ab2fe27e159c2225ff9..4f088d0cbf800871be4f4f74aa7672b92f972911 100644
+--- a/package.json
++++ b/package.json
+@@ -19,19 +19,6 @@
+   "types": "dist/esm/index.d.ts",
+   "main": "dist/cjs/index.cjs",
+   "module": "dist/esm/index.js",
+-  "exports": {
+-    ".": {
+-      "import": {
+-        "types": "./dist/esm/index.d.ts",
+-        "default": "./dist/esm/index.js"
+-      },
+-      "require": {
+-        "types": "./dist/cjs/index.d.cts",
+-        "default": "./dist/cjs/index.cjs"
+-      }
+-    },
+-    "./package.json": "./package.json"
+-  },
+   "devDependencies": {
+     "solid-js": "^1.7.8",
+     "vite-plugin-solid": "^2.10.1"
