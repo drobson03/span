@@ -10,17 +10,7 @@ import { createForm } from "@tanstack/solid-form/src/createForm";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import dayjs from "dayjs";
 import { Index, Show } from "solid-js";
-import {
-  maxLength,
-  number,
-  string,
-  minValue,
-  coerce,
-  object,
-  array,
-  Input,
-  parse,
-} from "valibot";
+import { maxLength, number, string, minValue, object, array, InferInput, parse, pipe, unknown, transform } from "valibot"
 import { db } from "~/server/db";
 import { exercise, set, workout as workoutTable } from "~/server/schema";
 import { getAuthenticatedUser } from "~/server/utils";
@@ -32,19 +22,19 @@ const getExerciseTypes = cache(async () => {
 
 const WorkoutFormDataSchema = object({
   datetime: string(),
-  notes: string([maxLength(1000)]),
+  notes: pipe(string(), maxLength(1000)),
   exercises: array(
     object({
       exerciseTypeId: string(),
       weight: string(),
-      targetReps: number([minValue(0)]),
-      notes: string([maxLength(1000)]),
-      sets: array(number([minValue(0)])),
+      targetReps: pipe(number(), minValue(0)),
+      notes: pipe(string(), maxLength(1000)),
+      sets: array(pipe(number(), minValue(0))),
     }),
   ),
 });
 
-type WorkoutFormData = Input<typeof WorkoutFormDataSchema>;
+type WorkoutFormData = InferInput<typeof WorkoutFormDataSchema>;
 
 const createWorkout = action(async (w: unknown) => {
   "use server";
@@ -158,7 +148,7 @@ export default function WorkoutForm() {
         <form.Field
           name="notes"
           validators={{
-            onChange: string([maxLength(1000)]),
+            onChange: pipe(string(), maxLength(1000)),
           }}
           children={(notesField) => {
             return (
@@ -247,7 +237,7 @@ export default function WorkoutForm() {
                       <form.Field
                         name={`exercises[${i}].weight`}
                         validators={{
-                          onBlur: coerce(number(), Number),
+                          onBlur: pipe(unknown(), transform(Number)),
                         }}
                       >
                         {(weightField) => (
@@ -274,7 +264,7 @@ export default function WorkoutForm() {
                       <form.Field
                         name={`exercises[${i}].targetReps`}
                         validators={{
-                          onBlur: number([minValue(0)]),
+                          onBlur: pipe(number(), minValue(0)),
                         }}
                       >
                         {(targetRepsField) => (
@@ -303,7 +293,7 @@ export default function WorkoutForm() {
                     <form.Field
                       name={`exercises[${i}].notes`}
                       validators={{
-                        onChange: string([maxLength(1000)]),
+                        onChange: pipe(string(), maxLength(1000)),
                       }}
                     >
                       {(notesField) => (
@@ -341,7 +331,7 @@ export default function WorkoutForm() {
                                   <form.Field
                                     name={`exercises[${i}].sets[${j}]`}
                                     validators={{
-                                      onChange: number([minValue(0)]),
+                                      onChange: pipe(number(), minValue(0)),
                                     }}
                                   >
                                     {(setField) => (
