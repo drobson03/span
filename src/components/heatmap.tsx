@@ -6,7 +6,7 @@ import { db } from "~/server/db";
 import { type Workout } from "~/server/schema";
 import { getAuthenticatedUser } from "~/server/utils";
 
-const getWorkouts = cache(async (since: string) => {
+export const getWorkouts = cache(async (since: string) => {
   "use server";
   const startDate = dayjs(since, "YYYY-MM-DD").hour(0).minute(0).second(0);
   const user = await getAuthenticatedUser();

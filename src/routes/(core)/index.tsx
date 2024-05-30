@@ -1,5 +1,11 @@
 import { Title } from "@solidjs/meta";
-import Heatmap from "~/components/heatmap";
+import { type RouteDefinition } from "@solidjs/router";
+import dayjs from "dayjs";
+import Heatmap, { getWorkouts } from "~/components/heatmap";
+
+export const load = {
+  load: () => getWorkouts(dayjs().subtract(1, "year").format("YYYY-MM-DD")),
+} satisfies RouteDefinition;
 
 export default function Dashboard() {
   return (
