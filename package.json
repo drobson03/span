@@ -9,16 +9,16 @@
     "version": "vinxi version"
   },
   "dependencies": {
-    "@epic-web/remember": "^1.0.2",
+    "@epic-web/remember": "^1.1.0",
     "@libsql/client": "^0.6.0",
     "@lucia-auth/adapter-drizzle": "^1.0.7",
-    "@solidjs/meta": "^0.29.3",
-    "@solidjs/router": "^0.13.3",
-    "@solidjs/start": "1.0.0-rc.1",
-    "@tanstack/form-core": "^0.19.4",
-    "@tanstack/solid-form": "^0.19.4",
-    "@tanstack/valibot-form-adapter": "^0.19.4",
-    "arctic": "^1.8.0",
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.13.4",
+    "@solidjs/start": "1.0.1",
+    "@tanstack/form-core": "^0.20.2",
+    "@tanstack/solid-form": "^0.20.2",
+    "@tanstack/valibot-form-adapter": "^0.20.2",
+    "arctic": "^1.9.0",
     "dayjs": "^1.11.11",
     "drizzle-orm": "^0.30.10",
     "lucia": "^3.2.0",
@@ -26,7 +26,7 @@
     "oslo": "^1.2.0",
     "solid-js": "^1.8.17",
     "tailwind-merge": "^2.3.0",
-    "valibot": "^0.30.0",
+    "valibot": "0.31.0-rc.6",
     "vinxi": "^0.3.11"
   },
   "engines": {
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
     "autoprefixer": "^10.4.19",
-    "drizzle-kit": "^0.20.18",
+    "drizzle-kit": "^0.21.4",
     "postcss": "^8.4.38",
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14",
@@ -49,7 +49,7 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@tanstack/solid-form@0.19.4": "patches/@tanstack__solid-form@0.19.4.patch"
+      "@tanstack/solid-form@0.20.2": "patches/@tanstack__solid-form@0.20.2.patch"
     }
   }
 }
