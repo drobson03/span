@@ -1,8 +1,16 @@
 import { Title } from "@solidjs/meta";
 import { A, cache, createAsync } from "@solidjs/router";
-import { Index, createMemo } from "solid-js";
+import { Accessor, Index, createMemo, createSignal, onMount } from "solid-js";
 import { db } from "~/server/db";
+import type { Exercise, ExerciseType, Set, Workout } from "~/server/schema";
 import { chunk, getAuthenticatedUser } from "~/server/utils";
+
+type WorkoutWithAllInfo = Workout & {
+  exercises: (Exercise & {
+    exerciseType: ExerciseType;
+    sets: Array<Set>;
+  })[];
+};
 
 const getWorkouts = cache(async () => {
   "use server";
@@ -49,40 +57,7 @@ export default function Workouts() {
             {(workouts) => (
               <div class="divide-y md:col-span-5 md:grid md:grid-cols-subgrid md:place-items-stretch md:divide-x md:divide-y-0">
                 <Index each={workouts()}>
-                  {(workout) => (
-                    <div class="p-4 transition-colors hover:cursor-pointer hover:bg-gray-50 md:px-6">
-                      <h2 class="text-lg font-medium">
-                        {workout().date.toLocaleString()}
-                      </h2>
-                      <p class="text-gray-600">{workout().notes}</p>
-                      <ul class="mt-2 space-y-2">
-                        <Index each={workout().exercises}>
-                          {(exercise) => (
-                            <li>
-                              <h3 class="text-xl font-semibold">
-                                {exercise().exerciseType.name}
-                              </h3>
-                              <p class="text-gray-600">
-                                {`${Intl.NumberFormat(undefined, {
-                                  minimumFractionDigits: 1,
-                                }).format(exercise().weight)} kg`}
-                              </p>
-                              <p class="text-gray-600">{exercise().notes}</p>
-                              <ul class="mt-2 flex flex-row space-x-2">
-                                <Index each={exercise().sets}>
-                                  {(set) => (
-                                    <li class="inline-flex size-10 items-center justify-center border bg-white">
-                                      {set().reps}
-                                    </li>
-                                  )}
-                                </Index>
-                              </ul>
-                            </li>
-                          )}
-                        </Index>
-                      </ul>
-                    </div>
-                  )}
+                  {(workout) => <WorkoutEntry workout={workout} />}
                 </Index>
               </div>
             )}
@@ -90,5 +65,46 @@ export default function Workouts() {
         </div>
       </div>
     </>
+  );
+}
+
+function WorkoutEntry({ workout }: { workout: Accessor<WorkoutWithAllInfo> }) {
+  const [displayDate, setDisplayDate] = createSignal("");
+
+  onMount(() => {
+    setDisplayDate(workout().date.toLocaleString());
+  });
+
+  return (
+    <div class="p-4 transition-colors hover:cursor-pointer hover:bg-gray-50 md:px-6">
+      <h2 class="text-lg font-medium">{displayDate()}</h2>
+      <p class="text-gray-600">{workout().notes}</p>
+      <ul class="mt-2 space-y-2">
+        <Index each={workout().exercises}>
+          {(exercise) => (
+            <li>
+              <h3 class="text-xl font-semibold">
+                {exercise().exerciseType.name}
+              </h3>
+              <p class="text-gray-600">
+                {`${Intl.NumberFormat(undefined, {
+                  minimumFractionDigits: 1,
+                }).format(exercise().weight)} kg`}
+              </p>
+              <p class="text-gray-600">{exercise().notes}</p>
+              <ul class="mt-2 flex flex-row space-x-2">
+                <Index each={exercise().sets}>
+                  {(set) => (
+                    <li class="inline-flex size-10 items-center justify-center border bg-white">
+                      {set().reps}
+                    </li>
+                  )}
+                </Index>
+              </ul>
+            </li>
+          )}
+        </Index>
+      </ul>
+    </div>
   );
 }
