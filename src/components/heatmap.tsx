@@ -33,7 +33,9 @@ export const getWorkouts = cache(async (since: string) => {
 
 export default function Heatmap() {
   const today = createMemo(() => dayjs());
-  const yearAgo = createMemo(() => today().subtract(1, "year"));
+  const yearAgo = createMemo(() =>
+    today().endOf("week").add(1, "day").subtract(53, "weeks"),
+  );
 
   const workouts = createAsync(() =>
     getWorkouts(yearAgo().format("YYYY-MM-DD")),
