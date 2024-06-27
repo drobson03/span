@@ -5,12 +5,23 @@ import {
   redirect,
   useAction,
 } from "@solidjs/router";
-import { type FieldApi } from "@tanstack/solid-form/src/index";
-import { createForm } from "@tanstack/solid-form/src/createForm";
+import { createForm, type FieldApi } from "@tanstack/solid-form";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import dayjs from "dayjs";
 import { Index, Show } from "solid-js";
-import { maxLength, number, string, minValue, object, array, InferInput, parse, pipe, unknown, transform } from "valibot"
+import {
+  maxLength,
+  number,
+  string,
+  minValue,
+  object,
+  array,
+  InferInput,
+  parse,
+  pipe,
+  unknown,
+  transform,
+} from "valibot";
 import { db } from "~/server/db";
 import { exercise, set, workout as workoutTable } from "~/server/schema";
 import { getAuthenticatedUser } from "~/server/utils";
@@ -110,7 +121,7 @@ export default function WorkoutForm() {
         datetime: dayjs(value.datetime, "YYYY-MM-DD[T]HH:mm").toISOString(),
       });
     },
-    validatorAdapter: valibotValidator,
+    validatorAdapter: valibotValidator(),
   }));
 
   return (
@@ -314,11 +325,7 @@ export default function WorkoutForm() {
                         </div>
                       )}
                     </form.Field>
-                    <form.Field
-                      name={`exercises[${i}].sets`}
-                      mode="array"
-                      preserveValue
-                    >
+                    <form.Field name={`exercises[${i}].sets`} mode="array">
                       {(setsArrayField) => (
                         <div class="flex flex-col gap-1">
                           <label for={setsArrayField().name}>Sets</label>
