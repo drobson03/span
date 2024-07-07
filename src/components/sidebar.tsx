@@ -1,5 +1,5 @@
 import { A, createAsync } from "@solidjs/router";
-import { Component, type JSX } from "solid-js";
+import type { Component, JSX } from "solid-js";
 import { getAuthenticatedUser } from "~/server/utils";
 import DumbbellIcon from "~/components/icons/dumbbell";
 import GaugeIcon from "~/components/icons/gauge";
@@ -36,15 +36,15 @@ export default function Sidebar() {
   const user = createAsync(() => getAuthenticatedUser());
 
   return (
-    <div class="flex flex-col space-y-4 border-b bg-white pb-4 text-gray-900 md:flex-[20_1_0] md:border-b-0 md:border-r md:pb-0 2xl:flex-[10_1_0]">
+    <div class="flex flex-col space-y-4 border-b bg-white pb-4 text-gray-900 md:flex-[20_1_0] md:border-r md:border-b-0 md:pb-0 2xl:flex-[10_1_0]">
       <div class="flex items-center space-x-2 border-b p-4">
         <MoveUpRightIcon class="size-10" />
-        <h1 class="text-2xl font-semibold text-black">Span</h1>
+        <h1 class="font-semibold text-2xl text-black">Span</h1>
       </div>
       <div class="flex items-center space-x-4 px-4 md:px-8">
         <div>
           <p class="font-semibold">{user()?.name}</p>
-          <p class="text-sm text-gray-500">{user()?.email}</p>
+          <p class="text-gray-500 text-sm">{user()?.email}</p>
         </div>
       </div>
       <nav>

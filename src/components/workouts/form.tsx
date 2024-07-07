@@ -5,7 +5,8 @@ import {
   redirect,
   useAction,
 } from "@solidjs/router";
-import { createForm, type FieldApi } from "@tanstack/solid-form";
+import { createForm } from "@tanstack/solid-form";
+import type { FieldApi } from "@tanstack/solid-form";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import dayjs from "dayjs";
 import { Index, Show } from "solid-js";
@@ -16,7 +17,7 @@ import {
   minValue,
   object,
   array,
-  InferInput,
+  type InferInput,
   parse,
   pipe,
   unknown,
@@ -71,7 +72,7 @@ const createWorkout = action(async (w: unknown) => {
       workout.exercises.map((exercise) => ({
         workoutId,
         exerciseTypeId: exercise.exerciseTypeId,
-        weight: parseFloat(exercise.weight),
+        weight: Number.parseFloat(exercise.weight),
         targetReps: exercise.targetReps,
         notes: exercise.notes.length > 0 ? exercise.notes : null,
         sets: exercise.sets,
@@ -98,7 +99,10 @@ const createWorkout = action(async (w: unknown) => {
   return redirect("/workouts");
 });
 
-function FieldInfo(props: { field: FieldApi<any, any, any, any> }) {
+function FieldInfo(props: {
+  // biome-ignore lint/suspicious/noExplicitAny: FieldApi is a generic type
+  field: FieldApi<any, any, any, any>;
+}) {
   return (
     <Show when={props.field.state.meta.errors}>
       <em>{props.field.state.meta.errors}</em>
@@ -134,9 +138,8 @@ export default function WorkoutForm() {
       }}
     >
       <div class="col-span-4 grid grid-cols-3 place-items-stretch gap-4 bg-white p-4 md:px-6">
-        <form.Field
-          name="datetime"
-          children={(datetimeField) => {
+        <form.Field name="datetime">
+          {(datetimeField) => {
             return (
               <>
                 <div class="flex flex-col gap-2">
@@ -155,13 +158,14 @@ export default function WorkoutForm() {
               </>
             );
           }}
-        />
+        </form.Field>
         <form.Field
           name="notes"
           validators={{
             onChange: pipe(string(), maxLength(1000)),
           }}
-          children={(notesField) => {
+        >
+          {(notesField) => {
             return (
               <>
                 <div class="flex flex-col gap-2">
@@ -180,13 +184,14 @@ export default function WorkoutForm() {
               </>
             );
           }}
-        />
+        </form.Field>
         <form.Subscribe
           selector={(state) => ({
             canSubmit: state.canSubmit,
             isSubmitting: state.isSubmitting,
           })}
-          children={(state) => {
+        >
+          {(state) => {
             return (
               <button
                 class="col-span-3 ml-auto h-12 max-w-min border px-4 py-1 text-center transition-colors hover:bg-gray-50"
@@ -197,7 +202,7 @@ export default function WorkoutForm() {
               </button>
             );
           }}
-        />
+        </form.Subscribe>
       </div>
       <form.Field name="exercises" mode="array">
         {(exercisesArrayField) => (

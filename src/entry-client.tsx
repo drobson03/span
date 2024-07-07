@@ -1,4 +1,8 @@
 // @refresh reload
 import { mount, StartClient } from "@solidjs/start/client";
 
-mount(() => <StartClient />, document.getElementById("app")!);
+const appRoot = document.getElementById("app");
+
+if (appRoot) {
+  mount(() => <StartClient />, appRoot);
+}

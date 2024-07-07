@@ -1,14 +1,25 @@
 import { Title } from "@solidjs/meta";
 import { A, cache, createAsync } from "@solidjs/router";
-import { Accessor, Index, createMemo, createSignal, onMount } from "solid-js";
+import {
+  type Accessor,
+  Index,
+  createMemo,
+  createSignal,
+  onMount,
+} from "solid-js";
 import { db } from "~/server/db";
-import type { Exercise, ExerciseType, Set, Workout } from "~/server/schema";
+import type {
+  Exercise,
+  ExerciseType,
+  WorkoutSet,
+  Workout,
+} from "~/server/schema";
 import { chunk, getAuthenticatedUser } from "~/server/utils";
 
 type WorkoutWithAllInfo = Workout & {
   exercises: (Exercise & {
     exerciseType: ExerciseType;
-    sets: Array<Set>;
+    sets: Array<WorkoutSet>;
   })[];
 };
 
@@ -35,14 +46,14 @@ export const route = {
 
 export default function Workouts() {
   const workouts = createAsync(() => getWorkouts());
-  const chunkedWorkouts = createMemo(() => chunk(workouts(), 5));
+  const chunkedWorkouts = createMemo(() => chunk(workouts() ?? [], 5));
 
   return (
     <>
       <Title>Workouts</Title>
       <div class="md:flex-[80_1_0]">
         <header class="flex flex-row items-center justify-between border-b p-4 md:px-6">
-          <h1 class="hidden text-4xl font-semibold md:block">Workouts</h1>
+          <h1 class="hidden font-semibold text-4xl md:block">Workouts</h1>
           <div class="flex flex-row items-center gap-2">
             <A
               href="/workouts/new"
@@ -77,13 +88,13 @@ function WorkoutEntry({ workout }: { workout: Accessor<WorkoutWithAllInfo> }) {
 
   return (
     <div class="p-4 transition-colors hover:cursor-pointer hover:bg-gray-50 md:px-6">
-      <h2 class="text-lg font-medium">{displayDate()}</h2>
+      <h2 class="font-medium text-lg">{displayDate()}</h2>
       <p class="text-gray-600">{workout().notes}</p>
       <ul class="mt-2 space-y-2">
         <Index each={workout().exercises}>
           {(exercise) => (
             <li>
-              <h3 class="text-xl font-semibold">
+              <h3 class="font-semibold text-xl">
                 {exercise().exerciseType.name}
               </h3>
               <p class="text-gray-600">

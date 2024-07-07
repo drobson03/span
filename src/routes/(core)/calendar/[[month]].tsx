@@ -13,7 +13,7 @@ import { twMerge } from "tailwind-merge";
 import ChevronLeftIcon from "~/components/icons/chevron-left";
 import ChevronRightIcon from "~/components/icons/chevron-right";
 import { db } from "~/server/db";
-import { type Workout } from "~/server/schema";
+import type { Workout } from "~/server/schema";
 import { chunk, getAuthenticatedUser } from "~/server/utils";
 
 dayjs.extend(isoWeek);
@@ -49,9 +49,9 @@ const getWorkoutsByDay = cache(async (month: string) => {
 function getDatesForCalendarView(month: Dayjs) {
   let startDate = month.startOf("isoWeek");
 
-  let endDate = startDate.add(6, "weeks");
+  const endDate = startDate.add(6, "weeks");
 
-  let dates: Dayjs[] = [];
+  const dates: Dayjs[] = [];
 
   while (startDate.isBefore(endDate)) {
     dates.push(startDate);
@@ -80,7 +80,7 @@ export default function Calendar() {
       <Title>Calendar</Title>
       <div class="md:flex-[80_1_0]">
         <header class="hidden flex-row items-center justify-between border-b p-4 md:flex md:px-6">
-          <h1 class="text-4xl font-semibold">Calendar</h1>
+          <h1 class="font-semibold text-4xl">Calendar</h1>
           <div class="flex flex-row items-center gap-2">
             <A
               href={`/calendar/${month().subtract(1, "month").format("YYYY-MM")}`}
@@ -118,7 +118,7 @@ export default function Calendar() {
                           "text-gray-500 hover:text-black",
                       )}
                     >
-                      <h2 class="text-lg font-medium">
+                      <h2 class="font-medium text-lg">
                         {day.format("DD MMM")}
                       </h2>
                       <Show when={workouts()?.[day.format("YYYY-MM-DD")]}>

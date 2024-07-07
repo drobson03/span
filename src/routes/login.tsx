@@ -8,7 +8,7 @@ export default function Login() {
       <div class="flex w-full flex-col items-center border p-4 sm:max-w-sm md:px-6">
         <div class="mb-2 flex w-full items-center justify-center space-x-2 p-4">
           <MoveUpRightIcon class="size-10" />
-          <h1 class="text-2xl font-semibold text-black">Span</h1>
+          <h1 class="font-semibold text-2xl text-black">Span</h1>
         </div>
         <a
           class="flex w-full items-center justify-between border px-3 py-2 transition-colors hover:bg-gray-50"
