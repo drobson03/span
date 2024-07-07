@@ -100,8 +100,8 @@ const createWorkout = action(async (w: unknown) => {
 
 function FieldInfo(props: { field: FieldApi<any, any, any, any> }) {
   return (
-    <Show when={props.field.state.meta.touchedErrors}>
-      <em>{props.field.state.meta.touchedErrors}</em>
+    <Show when={props.field.state.meta.errors}>
+      <em>{props.field.state.meta.errors}</em>
     </Show>
   );
 }
