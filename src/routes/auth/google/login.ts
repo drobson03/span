@@ -7,9 +7,9 @@ import { google } from "~/server/auth";
 export async function GET(event: APIEvent) {
   const state = generateState();
   const verifier = generateCodeVerifier();
-  const url = await google.createAuthorizationURL(state, verifier, {
-    scopes: ["openid", "profile", "email"],
-  });
+
+  const url = google.createAuthorizationURL(state, verifier);
+  url.addScopes("openid", "profile", "email");
 
   setCookie(event.nativeEvent, "google_oauth_state", state, {
     path: "/",

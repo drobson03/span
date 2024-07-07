@@ -1,4 +1,4 @@
-import { OAuth2RequestError } from "arctic";
+import { ArcticFetchError, OAuth2RequestError } from "arctic";
 import { generateId } from "lucia";
 import { google, lucia } from "~/server/auth";
 import { db } from "~/server/db";
@@ -34,7 +34,7 @@ export async function GET(event: APIEvent) {
       "https://openidconnect.googleapis.com/v1/userinfo",
       {
         headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
+          Authorization: `Bearer ${tokens.accessToken()}`,
         },
       },
     );
@@ -80,6 +80,7 @@ export async function GET(event: APIEvent) {
         status: 400,
       });
     }
+
     throw createError({
       status: 500,
     });
