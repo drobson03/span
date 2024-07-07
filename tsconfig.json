@@ -2,8 +2,7 @@
   "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts"],
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "preserve",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "preserve",
