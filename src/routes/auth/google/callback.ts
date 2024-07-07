@@ -3,7 +3,7 @@ import { generateId } from "lucia";
 import { google, lucia } from "~/server/auth";
 import { db } from "~/server/db";
 
-import { type APIEvent } from "@solidjs/start/server";
+import type { APIEvent } from "@solidjs/start/server";
 import {
   appendHeader,
   createError,

@@ -114,7 +114,7 @@ export const set = sqliteTable(
   }),
 );
 
-export type Set = typeof set.$inferSelect;
+export type WorkoutSet = typeof set.$inferSelect;
 
 export type InsertSet = typeof set.$inferInsert;
 

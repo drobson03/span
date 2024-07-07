@@ -1,4 +1,4 @@
-import { object, string, parse, url, pipe } from "valibot"
+import { object, string, parse, url, pipe } from "valibot";
 
 const EnvSchema = object({
   DATABASE_URL: string(),

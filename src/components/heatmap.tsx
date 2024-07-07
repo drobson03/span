@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { For, createMemo } from "solid-js";
 import { twMerge } from "tailwind-merge";
 import { db } from "~/server/db";
-import { type Workout } from "~/server/schema";
+import type { Workout } from "~/server/schema";
 import { getAuthenticatedUser } from "~/server/utils";
 
 export const getWorkouts = cache(async (since: string) => {
@@ -57,7 +57,7 @@ export default function Heatmap() {
 
   return (
     <div class="flex w-auto flex-col gap-2 border p-4 md:max-w-min md:px-6">
-      <h2 class="text-2xl font-semibold">Heatmap</h2>
+      <h2 class="font-semibold text-2xl">Heatmap</h2>
       <div class="grid grid-flow-col grid-rows-7 gap-1 overflow-x-scroll md:overflow-x-auto">
         <For each={dates()}>
           {(date) => (
