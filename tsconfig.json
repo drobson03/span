@@ -1,20 +1,23 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts"],
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "preserve",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "allowJs": true,
     "strict": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "types": ["vinxi/types/client"],
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "module": "preserve",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "isolatedModules": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
     "paths": {
-      "~/*": ["./src/*"]
-    }
+      "~/*": ["./app/*"]
+    },
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noEmit": true,
+    "strictNullChecks": true
   }
 }
