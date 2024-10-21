@@ -1,8 +1,8 @@
-import { defineConfig } from "@solidjs/start/config";
+import { defineConfig } from "@tanstack/start/config";
+import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  middleware: "./src/middleware.ts",
-  server: {
-    preset: "vercel",
+  vite: {
+    plugins: [tsConfigPaths({ projects: ["./tsconfig.json"] })],
   },
 });

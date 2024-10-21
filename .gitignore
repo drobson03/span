@@ -1,29 +1,16 @@
+node_modules
+package-lock.json
+yarn.lock
 
-dist
-.solid
-.output
+.DS_Store
+.cache
+.env
 .vercel
-.netlify
-netlify
+.output
 .vinxi
 
-# Environment
-.env
-.env*.local
-
-# dependencies
-/node_modules
-
-# IDEs and editors
-/.idea
-.project
-.classpath
-*.launch
-.settings/
-
-# Temp
-gitignore
-
-# System Files
-.DS_Store
-Thumbs.db
+/build/
+/api/
+/server/build
+/public/build
+.vinxi
