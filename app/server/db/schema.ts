@@ -16,7 +16,10 @@ export const workout = sqliteTable(
       .$defaultFn(() => nanoid()),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id),
+      .references(() => user.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     notes: text("notes"),
     date: integer("date", { mode: "timestamp" }).notNull(),
     createdAt: integer("created_at", { mode: "timestamp" })
@@ -69,10 +72,16 @@ export const exercise = sqliteTable(
     notes: text("notes"),
     workoutId: text("workout_id")
       .notNull()
-      .references(() => workout.id),
+      .references(() => workout.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     exerciseTypeId: text("exercise_type_id")
       .notNull()
-      .references(() => exerciseType.id),
+      .references(() => exerciseType.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
   },
   (exercise) => ({
     workoutIdIdx: index("exercise_workout_id_idx").on(exercise.workoutId),
@@ -107,7 +116,10 @@ export const set = sqliteTable(
     reps: integer("reps").notNull(),
     exerciseId: text("exercise_id")
       .notNull()
-      .references(() => exercise.id),
+      .references(() => exercise.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
   },
   (set) => ({
     exerciseIdIdx: index("set_exercise_id_idx").on(set.exerciseId),
@@ -155,7 +167,10 @@ export const session = sqliteTable(
     id: text("id").primaryKey(),
     userId: text("user_id")
       .notNull()
-      .references(() => user.id),
+      .references(() => user.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
     expiresAt: integer("expires_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
