@@ -1,9 +1,9 @@
-import DumbbellIcon from "~/components/icons/dumbbell";
-import GaugeIcon from "~/components/icons/gauge";
-import CalendarDaysIcon from "@heroicons/react/24/outline/CalendarDaysIcon";
 import ArrowTrendingUpIcon from "@heroicons/react/24/outline/ArrowTrendingUpIcon";
+import CalendarDaysIcon from "@heroicons/react/24/outline/CalendarDaysIcon";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import DumbbellIcon from "~/components/icons/dumbbell";
+import GaugeIcon from "~/components/icons/gauge";
 import MoveUpRightIcon from "~/components/icons/span";
 import { getUserQueryOptions } from "~/server/auth/functions";
 

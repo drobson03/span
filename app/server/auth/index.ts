@@ -1,18 +1,18 @@
-import { Google } from "arctic";
-import { env } from "~/server/env";
-import {
-  type User,
-  type Session,
-  session as sessionTable,
-  user as userTable,
-} from "~/server/db/schema";
+import { sha256 } from "@oslojs/crypto/sha2";
 import {
   encodeBase32LowerCaseNoPadding,
   encodeHexLowerCase,
 } from "@oslojs/encoding";
-import { sha256 } from "@oslojs/crypto/sha2";
-import { db } from "~/server/db";
+import { Google } from "arctic";
 import { eq } from "drizzle-orm";
+import { db } from "~/server/db";
+import {
+  type Session,
+  type User,
+  session as sessionTable,
+  user as userTable,
+} from "~/server/db/schema";
+import { env } from "~/server/env";
 
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);

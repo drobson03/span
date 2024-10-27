@@ -190,3 +190,12 @@ export const sessionRelations = relations(session, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export type ExerciseWithRelations = Exercise & {
+  exerciseType: ExerciseType;
+  sets: WorkoutSet[];
+};
+
+export type WorkoutWithRelations = Workout & {
+  exercises: ExerciseWithRelations[];
+};

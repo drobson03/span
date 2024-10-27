@@ -1,25 +1,30 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/start";
-import {
-  type Workout,
-  workout as workoutTable,
-  exercise,
-  set as setTable,
-} from "~/server/db/schema";
-import { db } from "~/server/db";
-import { getUser } from "~/server/auth/functions";
 import { format, set } from "date-fns";
+import { and, eq } from "drizzle-orm";
 import {
-  array,
   type InferInput,
+  array,
+  literal,
   maxLength,
   minValue,
   number,
   object,
+  optional,
   parse,
   pipe,
   string,
+  variant,
 } from "valibot";
+import { getUser } from "~/server/auth/functions";
+import { db } from "~/server/db";
+import {
+  type Workout,
+  type WorkoutWithRelations,
+  exercise,
+  set as setTable,
+  workout as workoutTable,
+} from "~/server/db/schema";
 
 function reduceWorkoutsByDate(workouts: Workout[]) {
   return workouts.reduce(
@@ -94,7 +99,7 @@ export const getWorkoutsByDateForMonthQueryOptions = (month: Date) =>
     queryFn: async () => await getWorkoutsByDateForMonth(month),
   });
 
-export const getWorkouts = createServerFn("GET", async () => {
+async function getWorkoutsFn() {
   const { user } = await getUser();
 
   if (!user) {
@@ -113,11 +118,14 @@ export const getWorkouts = createServerFn("GET", async () => {
       },
     },
   });
-});
+}
+
+export const getWorkouts = createServerFn("GET", getWorkoutsFn);
 
 export const getWorkoutsQueryOptions = queryOptions({
   queryKey: ["workouts"],
-  queryFn: async () => await getWorkouts(),
+  queryFn: async () =>
+    (await getWorkouts()) as Awaited<ReturnType<typeof getWorkoutsFn>>,
 });
 
 export const getExerciseTypes = createServerFn("GET", async () => {
@@ -129,31 +137,48 @@ export const getExerciseTypesQueryOptions = queryOptions({
   queryFn: async () => await getExerciseTypes(),
 });
 
-const WorkoutFormDataSchema = object({
+const WorkoutFormExerciseSchema = object({
+  exerciseTypeId: string(),
+  weight: string(),
+  targetReps: pipe(number(), minValue(0)),
+  notes: pipe(string(), maxLength(1000)),
+  sets: array(object({ reps: pipe(number(), minValue(0)) })),
+});
+
+const WorkoutFormCreateWorkoutDataSchema = object({
+  action: literal("create"),
   datetime: string(),
   notes: pipe(string(), maxLength(1000)),
+  exercises: array(WorkoutFormExerciseSchema),
+});
+
+const WorkoutFormEditWorkoutDataSchema = object({
+  ...WorkoutFormCreateWorkoutDataSchema.entries,
+  action: literal("edit"),
+  id: string(),
   exercises: array(
     object({
-      exerciseTypeId: string(),
-      weight: string(),
-      targetReps: pipe(number(), minValue(0)),
-      notes: pipe(string(), maxLength(1000)),
-      sets: array(pipe(number(), minValue(0))),
+      ...WorkoutFormExerciseSchema.entries,
+      id: optional(string()),
     }),
   ),
 });
 
-export type WorkoutFormData = Omit<
-  InferInput<typeof WorkoutFormDataSchema>,
-  "datetime"
-> & {
-  datetime: string;
-};
+const WorkoutFormDataSchema = variant("action", [
+  WorkoutFormCreateWorkoutDataSchema,
+  WorkoutFormEditWorkoutDataSchema,
+]);
+
+export type WorkoutFormData = InferInput<typeof WorkoutFormDataSchema>;
 
 export const createWorkout = createServerFn(
   "POST",
   async (w: WorkoutFormData) => {
     const workout = parse(WorkoutFormDataSchema, w);
+
+    if (workout.action !== "create") {
+      throw new Error("Invalid action");
+    }
 
     const { user } = await getUser();
 
@@ -202,14 +227,113 @@ export const createWorkout = createServerFn(
       .insert(setTable)
       .values(
         workout.exercises.flatMap((exercise, i) =>
-          exercise.sets.map((reps) => ({
+          exercise.sets.map((set) => ({
+            ...set,
             exerciseId: exercises[i]!.id,
-            reps,
           })),
         ),
       )
       .returning({ id: setTable.id });
-
-    return;
   },
 );
+
+export const updateWorkout = createServerFn(
+  "POST",
+  async (w: WorkoutFormData) => {
+    const workout = parse(WorkoutFormEditWorkoutDataSchema, w);
+
+    if (workout.action !== "edit") {
+      throw new Error("Invalid action");
+    }
+
+    const { user } = await getUser();
+
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    const exists = await db.query.workout.findFirst({
+      where: (workouts, { eq, and }) =>
+        and(eq(workouts.id, workout.id), eq(workouts.userId, user.id)),
+    });
+
+    if (!exists) {
+      throw new Error("Workout not found");
+    }
+
+    await db
+      .update(workoutTable)
+      .set({
+        notes: workout.notes || null,
+        updatedAt: new Date(),
+      })
+      .where(eq(workoutTable.id, workout.id));
+
+    await db.delete(exercise).where(eq(exercise.workoutId, workout.id));
+
+    if (workout.exercises.length > 0) {
+      const exercises = await db
+        .insert(exercise)
+        .values(
+          workout.exercises.map((ex) => ({
+            workoutId: workout.id,
+            exerciseTypeId: ex.exerciseTypeId,
+            weight: Number.parseFloat(ex.weight),
+            targetReps: ex.targetReps,
+            notes: ex.notes || null,
+          })),
+        )
+        .returning({ id: exercise.id });
+
+      await db.insert(setTable).values(
+        workout.exercises.flatMap((ex, i) =>
+          ex.sets.map((set) => ({
+            exerciseId: exercises[i]!.id,
+            reps: set.reps,
+          })),
+        ),
+      );
+    }
+  },
+);
+
+export const deleteWorkout = createServerFn("POST", async (id: string) => {
+  const { user } = await getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  await db
+    .delete(workoutTable)
+    .where(and(eq(workoutTable.id, id), eq(workoutTable.userId, user.id)));
+});
+
+export const getWorkout = createServerFn("GET", async (id: string) => {
+  const { user } = await getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const workout = await db.query.workout.findFirst({
+    where: (workouts, { eq, and }) =>
+      and(eq(workouts.id, id), eq(workouts.userId, user.id)),
+    with: {
+      exercises: {
+        with: {
+          exerciseType: true,
+          sets: true,
+        },
+      },
+    },
+  });
+
+  return workout ?? null;
+});
+
+export const getWorkoutQueryOptions = (id: string) =>
+  queryOptions({
+    queryKey: ["workouts", id],
+    queryFn: async () => (await getWorkout(id)) as WorkoutWithRelations | null,
+  });

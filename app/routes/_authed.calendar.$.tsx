@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { set, addMonths, subMonths, parse } from "date-fns";
+import { addMonths, parse, set, subMonths } from "date-fns";
 import Calendar from "~/components/calendar";
 import CalendarHeader from "~/components/calendar/header";
 import { getWorkoutsByDateForMonthQueryOptions } from "~/server/functions";

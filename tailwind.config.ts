@@ -1,6 +1,7 @@
-import type { Config } from "tailwindcss";
-import defaultTheme from "tailwindcss/defaultTheme";
 import FormsPlugin from "@tailwindcss/forms";
+import type { Config } from "tailwindcss";
+import AnimatePlugin from "tailwindcss-animate";
+import defaultTheme from "tailwindcss/defaultTheme";
 
 export default {
   content: ["./app/**/*.{js,jsx,ts,tsx}"],
@@ -11,5 +12,5 @@ export default {
       },
     },
   },
-  plugins: [FormsPlugin],
+  plugins: [AnimatePlugin, FormsPlugin],
 } satisfies Config;

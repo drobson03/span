@@ -1,8 +1,8 @@
 import type { QueryClient } from "@tanstack/react-query";
 import {
-  createRootRouteWithContext,
   Outlet,
   ScrollRestoration,
+  createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { Body, Head, Html, Meta, Scripts } from "@tanstack/start";
 import tailwind from "~/app.css?url";

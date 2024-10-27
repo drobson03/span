@@ -1,7 +1,7 @@
 import { createAPIFileRoute } from "@tanstack/start/api";
-import { decodeIdToken, OAuth2RequestError } from "arctic";
+import { OAuth2RequestError, decodeIdToken } from "arctic";
 import { eq } from "drizzle-orm";
-import { email, parse, object, pipe, string } from "valibot";
+import { email, object, parse, pipe, string } from "valibot";
 import { getCookie, getQuery, setCookie } from "vinxi/http";
 import { createSession, generateSessionToken, google } from "~/server/auth";
 import { db } from "~/server/db";

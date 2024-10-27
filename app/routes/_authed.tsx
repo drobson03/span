@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import Sidebar from "~/components/sidebar";
 import { getUserQueryOptions } from "~/server/auth/functions";
 

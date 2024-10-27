@@ -1,23 +1,32 @@
+import ArrowDownIcon from "@heroicons/react/16/solid/ArrowDownIcon";
+import ArrowLeftIcon from "@heroicons/react/16/solid/ArrowLeftIcon";
+import ArrowRightIcon from "@heroicons/react/16/solid/ArrowRightIcon";
+import ArrowUpIcon from "@heroicons/react/16/solid/ArrowUpIcon";
+import XMarkIcon from "@heroicons/react/16/solid/XMarkIcon";
 import { useForm } from "@tanstack/react-form";
 import type { FieldApi } from "@tanstack/react-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { valibotValidator } from "@tanstack/valibot-form-adapter";
+import { format, parse } from "date-fns";
+import { useMemo } from "react";
 import {
   maxLength,
-  number,
-  string,
   minValue,
+  number,
   pipe,
-  unknown,
+  string,
   transform,
+  unknown,
 } from "valibot";
-import { format, parse } from "date-fns";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { WorkoutWithRelations } from "~/server/db/schema";
 import {
+  type WorkoutFormData,
   createWorkout,
   getExerciseTypesQueryOptions,
-  type WorkoutFormData,
+  updateWorkout,
 } from "~/server/functions";
-import { useNavigate } from "@tanstack/react-router";
+import Spinner from "../spinner";
 
 function FieldInfo(props: {
   // biome-ignore lint/suspicious/noExplicitAny: FieldApi is a generic type
@@ -28,29 +37,54 @@ function FieldInfo(props: {
   ) : null;
 }
 
-export default function WorkoutForm() {
+export default function WorkoutForm({
+  workout,
+}: {
+  workout?: WorkoutWithRelations;
+}) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
 
-  const createWorkoutMutation = useMutation({
+  const upsertWorkoutMutation = useMutation({
     mutationFn: async (workout: WorkoutFormData) =>
-      await createWorkout(workout),
+      workout.action === "create"
+        ? await createWorkout(workout)
+        : await updateWorkout(workout),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
       await navigate({ to: "/workouts" });
     },
   });
 
-  const form = useForm({
-    defaultValues: {
+  const defaultValues = useMemo(() => {
+    if (workout) {
+      return {
+        ...workout,
+        action: "edit" as const,
+        datetime: format(workout.date, "yyyy-MM-dd'T'HH:mm"),
+        notes: workout.notes ?? "",
+        exercises: workout.exercises.map((exercise) => ({
+          ...exercise,
+          weight: String(exercise.weight),
+          notes: exercise.notes ?? "",
+        })),
+      };
+    }
+
+    return {
+      action: "create" as const,
       datetime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
       notes: "",
       exercises: [],
-    } satisfies WorkoutFormData as WorkoutFormData,
+    };
+  }, [workout]);
+
+  const form = useForm({
+    defaultValues: defaultValues satisfies WorkoutFormData as WorkoutFormData,
     onSubmit: async ({ value }) => {
-      await createWorkoutMutation.mutateAsync({
+      await upsertWorkoutMutation.mutateAsync({
         ...value,
         datetime: parse(
           value.datetime,
@@ -140,7 +174,7 @@ export default function WorkoutForm() {
                 type="submit"
                 disabled={!state.canSubmit}
               >
-                {state.isSubmitting ? "..." : "Save"}
+                {state.isSubmitting ? <Spinner className="size-4" /> : "Save"}
               </button>
             );
           }}
@@ -164,9 +198,47 @@ export default function WorkoutForm() {
                     >
                       {(exerciseTypeIdField) => (
                         <>
-                          <label htmlFor={exerciseTypeIdField.name}>
-                            Exercise
-                          </label>
+                          <div className="flex flex-row items-center justify-between">
+                            <label htmlFor={exerciseTypeIdField.name}>
+                              Exercise
+                            </label>
+                            <div className="flex flex-row items-center gap-2">
+                              {i > 0 ? (
+                                <button
+                                  className="-mr-1 text-gray-500 transition-colors hover:text-red-500"
+                                  type="button"
+                                  onClick={() =>
+                                    exercisesArrayField.moveValue(i, i - 1)
+                                  }
+                                >
+                                  <ArrowLeftIcon className="hidden size-4 md:block" />
+                                  <ArrowUpIcon className="size-4 md:hidden" />
+                                </button>
+                              ) : null}
+                              {i <
+                              exercisesArrayField.state.value.length - 1 ? (
+                                <button
+                                  className="-mr-1 text-gray-500 transition-colors hover:text-red-500"
+                                  type="button"
+                                  onClick={() =>
+                                    exercisesArrayField.moveValue(i, i + 1)
+                                  }
+                                >
+                                  <ArrowRightIcon className="hidden size-4 md:block" />
+                                  <ArrowDownIcon className="size-4 md:hidden" />
+                                </button>
+                              ) : null}
+                              <button
+                                className="-mr-1 text-gray-500 transition-colors hover:text-red-500"
+                                type="button"
+                                onClick={() =>
+                                  exercisesArrayField.removeValue(i)
+                                }
+                              >
+                                <XMarkIcon className="size-4" />
+                              </button>
+                            </div>
+                          </div>
                           <select
                             className="border-gray-200 focus:border-black focus:ring-black"
                             onInput={(e) =>
@@ -281,7 +353,7 @@ export default function WorkoutForm() {
                                   <form.Field
                                     // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
                                     key={j}
-                                    name={`exercises[${i}].sets[${j}]`}
+                                    name={`exercises[${i}].sets[${j}].reps`}
                                     validators={{
                                       onChange: pipe(number(), minValue(0)),
                                     }}
@@ -318,9 +390,9 @@ export default function WorkoutForm() {
                               : null}
                             <button
                               onClick={() =>
-                                setsArrayField.pushValue(
-                                  exerciseValue.targetReps,
-                                )
+                                setsArrayField.pushValue({
+                                  reps: exerciseValue.targetReps,
+                                })
                               }
                               type="button"
                               className="size-10 border bg-white text-center text-xl transition-colors hover:bg-gray-50"

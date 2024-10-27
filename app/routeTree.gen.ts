@@ -10,122 +10,137 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./routes/__root";
-import { Route as LoginImport } from "./routes/login";
-import { Route as AuthedImport } from "./routes/_authed";
-import { Route as AuthedIndexImport } from "./routes/_authed.index";
-import { Route as AuthedAnalyticsImport } from "./routes/_authed.analytics";
-import { Route as AuthedWorkoutsIndexImport } from "./routes/_authed.workouts.index";
-import { Route as AuthedWorkoutsNewImport } from "./routes/_authed.workouts.new";
-import { Route as AuthedCalendarSplatImport } from "./routes/_authed.calendar.$";
+import { Route as rootRoute } from './routes/__root'
+import { Route as LoginImport } from './routes/login'
+import { Route as AuthedImport } from './routes/_authed'
+import { Route as AuthedIndexImport } from './routes/_authed.index'
+import { Route as AuthedAnalyticsImport } from './routes/_authed.analytics'
+import { Route as AuthedWorkoutsIndexImport } from './routes/_authed.workouts.index'
+import { Route as AuthedWorkoutsNewImport } from './routes/_authed.workouts.new'
+import { Route as AuthedCalendarSplatImport } from './routes/_authed.calendar.$'
+import { Route as AuthedWorkoutsEditIdImport } from './routes/_authed.workouts.edit.$id'
 
 // Create/Update Routes
 
 const LoginRoute = LoginImport.update({
-  id: "/login",
-  path: "/login",
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const AuthedRoute = AuthedImport.update({
-  id: "/_authed",
+  id: '/_authed',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const AuthedIndexRoute = AuthedIndexImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => AuthedRoute,
-} as any);
+} as any)
 
 const AuthedAnalyticsRoute = AuthedAnalyticsImport.update({
-  id: "/analytics",
-  path: "/analytics",
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AuthedRoute,
-} as any);
+} as any)
 
 const AuthedWorkoutsIndexRoute = AuthedWorkoutsIndexImport.update({
-  id: "/workouts/",
-  path: "/workouts/",
+  id: '/workouts/',
+  path: '/workouts/',
   getParentRoute: () => AuthedRoute,
-} as any);
+} as any)
 
 const AuthedWorkoutsNewRoute = AuthedWorkoutsNewImport.update({
-  id: "/workouts/new",
-  path: "/workouts/new",
+  id: '/workouts/new',
+  path: '/workouts/new',
   getParentRoute: () => AuthedRoute,
-} as any);
+} as any)
 
 const AuthedCalendarSplatRoute = AuthedCalendarSplatImport.update({
-  id: "/calendar/$",
-  path: "/calendar/$",
+  id: '/calendar/$',
+  path: '/calendar/$',
   getParentRoute: () => AuthedRoute,
-} as any);
+} as any)
+
+const AuthedWorkoutsEditIdRoute = AuthedWorkoutsEditIdImport.update({
+  id: '/workouts/edit/$id',
+  path: '/workouts/edit/$id',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/_authed": {
-      id: "/_authed";
-      path: "";
-      fullPath: "";
-      preLoaderRoute: typeof AuthedImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/login": {
-      id: "/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof LoginImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/_authed/analytics": {
-      id: "/_authed/analytics";
-      path: "/analytics";
-      fullPath: "/analytics";
-      preLoaderRoute: typeof AuthedAnalyticsImport;
-      parentRoute: typeof AuthedImport;
-    };
-    "/_authed/": {
-      id: "/_authed/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof AuthedIndexImport;
-      parentRoute: typeof AuthedImport;
-    };
-    "/_authed/calendar/$": {
-      id: "/_authed/calendar/$";
-      path: "/calendar/$";
-      fullPath: "/calendar/$";
-      preLoaderRoute: typeof AuthedCalendarSplatImport;
-      parentRoute: typeof AuthedImport;
-    };
-    "/_authed/workouts/new": {
-      id: "/_authed/workouts/new";
-      path: "/workouts/new";
-      fullPath: "/workouts/new";
-      preLoaderRoute: typeof AuthedWorkoutsNewImport;
-      parentRoute: typeof AuthedImport;
-    };
-    "/_authed/workouts/": {
-      id: "/_authed/workouts/";
-      path: "/workouts";
-      fullPath: "/workouts";
-      preLoaderRoute: typeof AuthedWorkoutsIndexImport;
-      parentRoute: typeof AuthedImport;
-    };
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthedImport
+      parentRoute: typeof rootRoute
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/_authed/analytics': {
+      id: '/_authed/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthedAnalyticsImport
+      parentRoute: typeof AuthedImport
+    }
+    '/_authed/': {
+      id: '/_authed/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedIndexImport
+      parentRoute: typeof AuthedImport
+    }
+    '/_authed/calendar/$': {
+      id: '/_authed/calendar/$'
+      path: '/calendar/$'
+      fullPath: '/calendar/$'
+      preLoaderRoute: typeof AuthedCalendarSplatImport
+      parentRoute: typeof AuthedImport
+    }
+    '/_authed/workouts/new': {
+      id: '/_authed/workouts/new'
+      path: '/workouts/new'
+      fullPath: '/workouts/new'
+      preLoaderRoute: typeof AuthedWorkoutsNewImport
+      parentRoute: typeof AuthedImport
+    }
+    '/_authed/workouts/': {
+      id: '/_authed/workouts/'
+      path: '/workouts'
+      fullPath: '/workouts'
+      preLoaderRoute: typeof AuthedWorkoutsIndexImport
+      parentRoute: typeof AuthedImport
+    }
+    '/_authed/workouts/edit/$id': {
+      id: '/_authed/workouts/edit/$id'
+      path: '/workouts/edit/$id'
+      fullPath: '/workouts/edit/$id'
+      preLoaderRoute: typeof AuthedWorkoutsEditIdImport
+      parentRoute: typeof AuthedImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface AuthedRouteChildren {
-  AuthedAnalyticsRoute: typeof AuthedAnalyticsRoute;
-  AuthedIndexRoute: typeof AuthedIndexRoute;
-  AuthedCalendarSplatRoute: typeof AuthedCalendarSplatRoute;
-  AuthedWorkoutsNewRoute: typeof AuthedWorkoutsNewRoute;
-  AuthedWorkoutsIndexRoute: typeof AuthedWorkoutsIndexRoute;
+  AuthedAnalyticsRoute: typeof AuthedAnalyticsRoute
+  AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedCalendarSplatRoute: typeof AuthedCalendarSplatRoute
+  AuthedWorkoutsNewRoute: typeof AuthedWorkoutsNewRoute
+  AuthedWorkoutsIndexRoute: typeof AuthedWorkoutsIndexRoute
+  AuthedWorkoutsEditIdRoute: typeof AuthedWorkoutsEditIdRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
@@ -134,84 +149,91 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedCalendarSplatRoute: AuthedCalendarSplatRoute,
   AuthedWorkoutsNewRoute: AuthedWorkoutsNewRoute,
   AuthedWorkoutsIndexRoute: AuthedWorkoutsIndexRoute,
-};
+  AuthedWorkoutsEditIdRoute: AuthedWorkoutsEditIdRoute,
+}
 
 const AuthedRouteWithChildren =
-  AuthedRoute._addFileChildren(AuthedRouteChildren);
+  AuthedRoute._addFileChildren(AuthedRouteChildren)
 
 export interface FileRoutesByFullPath {
-  "": typeof AuthedRouteWithChildren;
-  "/login": typeof LoginRoute;
-  "/analytics": typeof AuthedAnalyticsRoute;
-  "/": typeof AuthedIndexRoute;
-  "/calendar/$": typeof AuthedCalendarSplatRoute;
-  "/workouts/new": typeof AuthedWorkoutsNewRoute;
-  "/workouts": typeof AuthedWorkoutsIndexRoute;
+  '': typeof AuthedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/analytics': typeof AuthedAnalyticsRoute
+  '/': typeof AuthedIndexRoute
+  '/calendar/$': typeof AuthedCalendarSplatRoute
+  '/workouts/new': typeof AuthedWorkoutsNewRoute
+  '/workouts': typeof AuthedWorkoutsIndexRoute
+  '/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
 
 export interface FileRoutesByTo {
-  "/login": typeof LoginRoute;
-  "/analytics": typeof AuthedAnalyticsRoute;
-  "/": typeof AuthedIndexRoute;
-  "/calendar/$": typeof AuthedCalendarSplatRoute;
-  "/workouts/new": typeof AuthedWorkoutsNewRoute;
-  "/workouts": typeof AuthedWorkoutsIndexRoute;
+  '/login': typeof LoginRoute
+  '/analytics': typeof AuthedAnalyticsRoute
+  '/': typeof AuthedIndexRoute
+  '/calendar/$': typeof AuthedCalendarSplatRoute
+  '/workouts/new': typeof AuthedWorkoutsNewRoute
+  '/workouts': typeof AuthedWorkoutsIndexRoute
+  '/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  "/_authed": typeof AuthedRouteWithChildren;
-  "/login": typeof LoginRoute;
-  "/_authed/analytics": typeof AuthedAnalyticsRoute;
-  "/_authed/": typeof AuthedIndexRoute;
-  "/_authed/calendar/$": typeof AuthedCalendarSplatRoute;
-  "/_authed/workouts/new": typeof AuthedWorkoutsNewRoute;
-  "/_authed/workouts/": typeof AuthedWorkoutsIndexRoute;
+  __root__: typeof rootRoute
+  '/_authed': typeof AuthedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/_authed/analytics': typeof AuthedAnalyticsRoute
+  '/_authed/': typeof AuthedIndexRoute
+  '/_authed/calendar/$': typeof AuthedCalendarSplatRoute
+  '/_authed/workouts/new': typeof AuthedWorkoutsNewRoute
+  '/_authed/workouts/': typeof AuthedWorkoutsIndexRoute
+  '/_authed/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | ""
-    | "/login"
-    | "/analytics"
-    | "/"
-    | "/calendar/$"
-    | "/workouts/new"
-    | "/workouts";
-  fileRoutesByTo: FileRoutesByTo;
+    | ''
+    | '/login'
+    | '/analytics'
+    | '/'
+    | '/calendar/$'
+    | '/workouts/new'
+    | '/workouts'
+    | '/workouts/edit/$id'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/login"
-    | "/analytics"
-    | "/"
-    | "/calendar/$"
-    | "/workouts/new"
-    | "/workouts";
+    | '/login'
+    | '/analytics'
+    | '/'
+    | '/calendar/$'
+    | '/workouts/new'
+    | '/workouts'
+    | '/workouts/edit/$id'
   id:
-    | "__root__"
-    | "/_authed"
-    | "/login"
-    | "/_authed/analytics"
-    | "/_authed/"
-    | "/_authed/calendar/$"
-    | "/_authed/workouts/new"
-    | "/_authed/workouts/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/_authed'
+    | '/login'
+    | '/_authed/analytics'
+    | '/_authed/'
+    | '/_authed/calendar/$'
+    | '/_authed/workouts/new'
+    | '/_authed/workouts/'
+    | '/_authed/workouts/edit/$id'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  AuthedRoute: typeof AuthedRouteWithChildren;
-  LoginRoute: typeof LoginRoute;
+  AuthedRoute: typeof AuthedRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
-};
+}
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
 /* prettier-ignore-end */
 
@@ -232,7 +254,8 @@ export const routeTree = rootRoute
         "/_authed/",
         "/_authed/calendar/$",
         "/_authed/workouts/new",
-        "/_authed/workouts/"
+        "/_authed/workouts/",
+        "/_authed/workouts/edit/$id"
       ]
     },
     "/login": {
@@ -256,6 +279,10 @@ export const routeTree = rootRoute
     },
     "/_authed/workouts/": {
       "filePath": "_authed.workouts.index.tsx",
+      "parent": "/_authed"
+    },
+    "/_authed/workouts/edit/$id": {
+      "filePath": "_authed.workouts.edit.$id.tsx",
       "parent": "/_authed"
     }
   }
