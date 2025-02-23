@@ -388,17 +388,21 @@ export default function WorkoutForm({
                                   </form.Field>
                                 ))
                               : null}
-                            <button
-                              onClick={() =>
-                                setsArrayField.pushValue({
-                                  reps: exerciseValue.targetReps,
-                                })
-                              }
-                              type="button"
-                              className="size-10 border bg-white text-center text-xl transition-colors hover:bg-gray-50"
-                            >
-                              +
-                            </button>
+                            <form.Field name={`exercises[${i}].targetReps`}>
+                              {(targetRepsField) => (
+                                <button
+                                  onClick={() =>
+                                    setsArrayField.pushValue({
+                                      reps: targetRepsField.state.value,
+                                    })
+                                  }
+                                  type="button"
+                                  className="size-10 border bg-white text-center text-xl transition-colors hover:bg-gray-50"
+                                >
+                                  +
+                                </button>
+                              )}
+                            </form.Field>
                           </div>
                           <FieldInfo field={setsArrayField} />
                         </div>
