@@ -5,13 +5,13 @@ import { and, eq } from "drizzle-orm";
 import {
   type InferInput,
   array,
+  date,
   literal,
   maxLength,
   minValue,
   number,
   object,
   optional,
-  parse,
   pipe,
   string,
   variant,
@@ -38,38 +38,45 @@ function reduceWorkoutsByDate(workouts: Workout[]) {
   );
 }
 
-export const getWorkoutsByDate = createServerFn("GET", async (since: Date) => {
-  const startDate = set(since, {
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
+export const getWorkoutsByDate = createServerFn({ method: "GET" })
+  .validator(object({ since: date() }))
+  .handler(async (ctx) => {
+    const startDate = set(ctx.data.since, {
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+    });
+    const { user } = await getUser();
+
+    if (!user) {
+      return {};
+    }
+
+    return reduceWorkoutsByDate(
+      await db.query.workout.findMany({
+        orderBy: (workouts, { desc }) => [desc(workouts.date)],
+        where: (workouts, { gte, eq, and }) => {
+          return and(
+            eq(workouts.userId, user.id),
+            gte(workouts.date, startDate),
+          );
+        },
+      }),
+    );
   });
-  const { user } = await getUser();
-
-  if (!user) {
-    return {};
-  }
-
-  return reduceWorkoutsByDate(
-    await db.query.workout.findMany({
-      orderBy: (workouts, { desc }) => [desc(workouts.date)],
-      where: (workouts, { gte, eq, and }) => {
-        return and(eq(workouts.userId, user.id), gte(workouts.date, startDate));
-      },
-    }),
-  );
-});
 
 export const getWorkoutsByDateQueryOptions = (since: Date) =>
   queryOptions({
     queryKey: ["workouts", since],
-    queryFn: async () => await getWorkoutsByDate(since),
+    queryFn: async () => await getWorkoutsByDate({ data: { since } }),
   });
 
-export const getWorkoutsByDateForMonth = createServerFn(
-  "GET",
-  async (month: Date) => {
-    const monthDate = set(month, { date: 1 });
+export const getWorkoutsByDateForMonth = createServerFn({
+  method: "GET",
+})
+  .validator(object({ month: date() }))
+  .handler(async (ctx) => {
+    const monthDate = set(ctx.data.month, { date: 1 });
     const { user } = await getUser();
 
     if (!user) {
@@ -90,13 +97,12 @@ export const getWorkoutsByDateForMonth = createServerFn(
         },
       }),
     );
-  },
-);
+  });
 
 export const getWorkoutsByDateForMonthQueryOptions = (month: Date) =>
   queryOptions({
     queryKey: ["workouts", month],
-    queryFn: async () => await getWorkoutsByDateForMonth(month),
+    queryFn: async () => await getWorkoutsByDateForMonth({ data: { month } }),
   });
 
 async function getWorkoutsFn() {
@@ -120,7 +126,9 @@ async function getWorkoutsFn() {
   });
 }
 
-export const getWorkouts = createServerFn("GET", getWorkoutsFn);
+export const getWorkouts = createServerFn({ method: "GET" }).handler(
+  getWorkoutsFn,
+);
 
 export const getWorkoutsQueryOptions = queryOptions({
   queryKey: ["workouts"],
@@ -128,9 +136,11 @@ export const getWorkoutsQueryOptions = queryOptions({
     (await getWorkouts()) as Awaited<ReturnType<typeof getWorkoutsFn>>,
 });
 
-export const getExerciseTypes = createServerFn("GET", async () => {
-  return await db.query.exerciseType.findMany();
-});
+export const getExerciseTypes = createServerFn({ method: "GET" }).handler(
+  async () => {
+    return await db.query.exerciseType.findMany();
+  },
+);
 
 export const getExerciseTypesQueryOptions = queryOptions({
   queryKey: ["exercise-types"],
@@ -171,10 +181,10 @@ const WorkoutFormDataSchema = variant("action", [
 
 export type WorkoutFormData = InferInput<typeof WorkoutFormDataSchema>;
 
-export const createWorkout = createServerFn(
-  "POST",
-  async (w: WorkoutFormData) => {
-    const workout = parse(WorkoutFormDataSchema, w);
+export const createWorkout = createServerFn({ method: "POST" })
+  .validator(WorkoutFormDataSchema)
+  .handler(async (ctx) => {
+    const workout = ctx.data;
 
     if (workout.action !== "create") {
       throw new Error("Invalid action");
@@ -234,13 +244,12 @@ export const createWorkout = createServerFn(
         ),
       )
       .returning({ id: setTable.id });
-  },
-);
+  });
 
-export const updateWorkout = createServerFn(
-  "POST",
-  async (w: WorkoutFormData) => {
-    const workout = parse(WorkoutFormEditWorkoutDataSchema, w);
+export const updateWorkout = createServerFn({ method: "POST" })
+  .validator(WorkoutFormEditWorkoutDataSchema)
+  .handler(async (ctx) => {
+    const workout = ctx.data;
 
     if (workout.action !== "edit") {
       throw new Error("Invalid action");
@@ -294,46 +303,52 @@ export const updateWorkout = createServerFn(
         ),
       );
     }
-  },
-);
-
-export const deleteWorkout = createServerFn("POST", async (id: string) => {
-  const { user } = await getUser();
-
-  if (!user) {
-    throw new Error("Not authenticated");
-  }
-
-  await db
-    .delete(workoutTable)
-    .where(and(eq(workoutTable.id, id), eq(workoutTable.userId, user.id)));
-});
-
-export const getWorkout = createServerFn("GET", async (id: string) => {
-  const { user } = await getUser();
-
-  if (!user) {
-    throw new Error("Not authenticated");
-  }
-
-  const workout = await db.query.workout.findFirst({
-    where: (workouts, { eq, and }) =>
-      and(eq(workouts.id, id), eq(workouts.userId, user.id)),
-    with: {
-      exercises: {
-        with: {
-          exerciseType: true,
-          sets: true,
-        },
-      },
-    },
   });
 
-  return workout ?? null;
-});
+export const deleteWorkout = createServerFn({ method: "POST" })
+  .validator(object({ id: string() }))
+  .handler(async (ctx) => {
+    const { user } = await getUser();
+
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    await db
+      .delete(workoutTable)
+      .where(
+        and(eq(workoutTable.id, ctx.data.id), eq(workoutTable.userId, user.id)),
+      );
+  });
+
+export const getWorkout = createServerFn({ method: "GET" })
+  .validator(object({ id: string() }))
+  .handler(async (ctx) => {
+    const { user } = await getUser();
+
+    if (!user) {
+      throw new Error("Not authenticated");
+    }
+
+    const workout = await db.query.workout.findFirst({
+      where: (workouts, { eq, and }) =>
+        and(eq(workouts.id, ctx.data.id), eq(workouts.userId, user.id)),
+      with: {
+        exercises: {
+          with: {
+            exerciseType: true,
+            sets: true,
+          },
+        },
+      },
+    });
+
+    return workout ?? null;
+  });
 
 export const getWorkoutQueryOptions = (id: string) =>
   queryOptions({
     queryKey: ["workouts", id],
-    queryFn: async () => (await getWorkout(id)) as WorkoutWithRelations | null,
+    queryFn: async () =>
+      (await getWorkout({ data: { id } })) as WorkoutWithRelations | null,
   });

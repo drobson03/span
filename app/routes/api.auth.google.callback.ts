@@ -7,7 +7,7 @@ import { createSession, generateSessionToken, google } from "~/server/auth";
 import { db } from "~/server/db";
 import { user } from "~/server/db/schema";
 
-export const Route = createAPIFileRoute("/api/auth/google/callback")({
+export const APIRoute = createAPIFileRoute("/api/auth/google/callback")({
   GET: async () => {
     const query = getQuery();
 

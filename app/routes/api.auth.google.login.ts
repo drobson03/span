@@ -3,7 +3,7 @@ import { generateCodeVerifier, generateState } from "arctic";
 import { setCookie } from "vinxi/http";
 import { google } from "~/server/auth";
 
-export const Route = createAPIFileRoute("/api/auth/google/login")({
+export const APIRoute = createAPIFileRoute("/api/auth/google/login")({
   GET: () => {
     const state = generateState();
     const verifier = generateCodeVerifier();

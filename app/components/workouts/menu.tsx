@@ -22,7 +22,7 @@ export default function WorkoutMenu({ workout }: { workout: Workout }) {
   const queryClient = useQueryClient();
 
   const deleteWorkoutMutation = useMutation({
-    mutationFn: async () => await deleteWorkout(workout.id),
+    mutationFn: async () => await deleteWorkout({ data: { id: workout.id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
     },

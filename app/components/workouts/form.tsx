@@ -4,10 +4,9 @@ import ArrowRightIcon from "@heroicons/react/16/solid/ArrowRightIcon";
 import ArrowUpIcon from "@heroicons/react/16/solid/ArrowUpIcon";
 import XMarkIcon from "@heroicons/react/16/solid/XMarkIcon";
 import { useForm } from "@tanstack/react-form";
-import type { FieldApi } from "@tanstack/react-form";
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { valibotValidator } from "@tanstack/valibot-form-adapter";
 import { format, parse } from "date-fns";
 import { useMemo } from "react";
 import {
@@ -28,10 +27,7 @@ import {
 } from "~/server/functions";
 import Spinner from "../spinner";
 
-function FieldInfo(props: {
-  // biome-ignore lint/suspicious/noExplicitAny: FieldApi is a generic type
-  field: FieldApi<any, any, any, any>;
-}) {
+function FieldInfo(props: { field: AnyFieldApi }) {
   return props.field.state.meta.errors ? (
     <em>{props.field.state.meta.errors.join(", ")}</em>
   ) : null;
@@ -48,10 +44,10 @@ export default function WorkoutForm({
   const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
 
   const upsertWorkoutMutation = useMutation({
-    mutationFn: async (workout: WorkoutFormData) =>
-      workout.action === "create"
-        ? await createWorkout(workout)
-        : await updateWorkout(workout),
+    mutationFn: async (data: WorkoutFormData) =>
+      data.action === "create"
+        ? await createWorkout({ data })
+        : await updateWorkout({ data }),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
       await navigate({ to: "/workouts" });
@@ -93,7 +89,6 @@ export default function WorkoutForm({
         ).toISOString(),
       });
     },
-    validatorAdapter: valibotValidator(),
   });
 
   return (
@@ -184,7 +179,7 @@ export default function WorkoutForm({
         {(exercisesArrayField) => (
           <>
             {exercisesArrayField.state.value.length > 0
-              ? exercisesArrayField.state.value.map((exerciseValue, i) => (
+              ? exercisesArrayField.state.value.map((_, i) => (
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
                     key={i}
@@ -268,7 +263,7 @@ export default function WorkoutForm({
                       <form.Field
                         name={`exercises[${i}].weight`}
                         validators={{
-                          onBlur: pipe(unknown(), transform(Number)),
+                          onBlur: pipe(string(), transform(Number)),
                         }}
                       >
                         {(weightField) => (
