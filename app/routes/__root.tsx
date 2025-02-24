@@ -2,9 +2,9 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
   HeadContent,
   Outlet,
+  Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import { Scripts } from "@tanstack/start";
 import tailwind from "~/app.css?url";
 import { getUser } from "~/server/auth/functions";
 
