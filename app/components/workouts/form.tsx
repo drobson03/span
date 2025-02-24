@@ -407,8 +407,12 @@ function ExerciseTypeCombobox({
 }: {
   exerciseTypeIdField: AnyFieldApi;
 }) {
-  const [input, setInput] = useState("");
   const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
+  const [input, setInput] = useState(
+    exerciseTypes?.find(
+      (exerciseType) => exerciseType.id === exerciseTypeIdField.state.value,
+    )?.name ?? "",
+  );
 
   return (
     <Command
@@ -416,13 +420,7 @@ function ExerciseTypeCombobox({
       label="Exercise"
     >
       <Command.Input
-        className="w-full border-none ring-0 placeholder:text-black focus:outline-none"
-        placeholder={
-          exerciseTypes?.find(
-            (exerciseType) =>
-              exerciseType.id === exerciseTypeIdField.state.value,
-          )?.name
-        }
+        className="w-full border-none ring-0 focus:outline-none"
         value={input}
         onValueChange={setInput}
       />
