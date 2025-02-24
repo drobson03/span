@@ -138,7 +138,9 @@ export const getWorkoutsQueryOptions = queryOptions({
 
 export const getExerciseTypes = createServerFn({ method: "GET" }).handler(
   async () => {
-    return await db.query.exerciseType.findMany();
+    return await db.query.exerciseType.findMany({
+      orderBy: (exerciseTypes, { asc }) => [asc(exerciseTypes.name)],
+    });
   },
 );
 

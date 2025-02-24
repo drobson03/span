@@ -8,16 +8,8 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { format, parse } from "date-fns";
-import { useMemo } from "react";
-import {
-  maxLength,
-  minValue,
-  number,
-  pipe,
-  string,
-  transform,
-  unknown,
-} from "valibot";
+import { useMemo, useState } from "react";
+import { maxLength, minValue, number, pipe, string, transform } from "valibot";
 import type { WorkoutWithRelations } from "~/server/db/schema";
 import {
   type WorkoutFormData,
@@ -26,6 +18,7 @@ import {
   updateWorkout,
 } from "~/server/functions";
 import Spinner from "../spinner";
+import { Command } from "cmdk";
 
 function FieldInfo(props: { field: AnyFieldApi }) {
   return props.field.state.meta.errors ? (
@@ -40,8 +33,6 @@ export default function WorkoutForm({
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
 
   const upsertWorkoutMutation = useMutation({
     mutationFn: async (data: WorkoutFormData) =>
@@ -234,27 +225,9 @@ export default function WorkoutForm({
                               </button>
                             </div>
                           </div>
-                          <select
-                            className="border-gray-200 focus:border-black focus:ring-black"
-                            onInput={(e) =>
-                              exerciseTypeIdField.handleChange(
-                                e.currentTarget.value,
-                              )
-                            }
-                            id={exerciseTypeIdField.name}
-                            name={exerciseTypeIdField.name}
-                            value={exerciseTypeIdField.state.value}
-                            onBlur={exerciseTypeIdField.handleBlur}
-                          >
-                            {exerciseTypes?.map((exerciseType) => (
-                              <option
-                                key={exerciseType.id}
-                                value={exerciseType.id}
-                              >
-                                {exerciseType.name}
-                              </option>
-                            ))}
-                          </select>
+                          <ExerciseTypeCombobox
+                            exerciseTypeIdField={exerciseTypeIdField}
+                          />
                           <FieldInfo field={exerciseTypeIdField} />
                         </>
                       )}
@@ -426,5 +399,51 @@ export default function WorkoutForm({
         )}
       </form.Field>
     </form>
+  );
+}
+
+function ExerciseTypeCombobox({
+  exerciseTypeIdField,
+}: {
+  exerciseTypeIdField: AnyFieldApi;
+}) {
+  const [input, setInput] = useState("");
+  const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
+
+  return (
+    <Command
+      className="group border border-gray-200 focus-within:border-black focus-within:ring-black"
+      label="Exercise"
+    >
+      <Command.Input
+        className="w-full border-none ring-0 placeholder:text-black focus:outline-none"
+        placeholder={
+          exerciseTypes?.find(
+            (exerciseType) =>
+              exerciseType.id === exerciseTypeIdField.state.value,
+          )?.name
+        }
+        value={input}
+        onValueChange={setInput}
+      />
+      <Command.List className="h-0 max-h-48 overflow-auto overscroll-contain transition-[height] duration-200 group-focus-within:h-[var(--cmdk-list-height)] group-focus-within:border-t">
+        <Command.Empty className="px-3 py-2">No results found.</Command.Empty>
+
+        {exerciseTypes?.map((exerciseType) => (
+          <Command.Item
+            key={exerciseType.id}
+            value={exerciseType.id}
+            keywords={[exerciseType.name]}
+            className="cursor-pointer px-3 py-2 data-[selected=true]:bg-gray-100"
+            onSelect={(value) => {
+              exerciseTypeIdField.handleChange(value);
+              setInput("");
+            }}
+          >
+            {exerciseType.name}
+          </Command.Item>
+        ))}
+      </Command.List>
+    </Command>
   );
 }
