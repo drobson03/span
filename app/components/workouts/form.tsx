@@ -363,7 +363,6 @@ export default function WorkoutForm({
                                           setField.state.value === 1
                                             ? setsArrayField.removeValue(j)
                                             : setField.handleChange(
-                                                // @ts-ignore
                                                 setField.state.value - 1,
                                               )
                                         }
@@ -371,12 +370,10 @@ export default function WorkoutForm({
                                           e.preventDefault();
                                           e.stopPropagation();
                                           setField.handleChange(
-                                            // @ts-ignore
                                             setField.state.value + 1,
                                           );
                                         }}
                                       >
-                                        {/* @ts-ignore */}
                                         {setField.state.value}
                                       </button>
                                     )}
