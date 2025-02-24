@@ -32,7 +32,7 @@ function Workouts() {
           </Link>
         </div>
       </header>
-      <div className="flex h-full flex-grow flex-col gap-[0.0625rem] overflow-y-auto bg-gray-200 md:grid md:grid-cols-5 md:place-items-stretch">
+      <div className="flex h-full grow flex-col gap-[0.0625rem] overflow-y-auto bg-gray-200 md:grid md:grid-cols-5 md:place-items-stretch">
         {workouts?.map((workout) => (
           <WorkoutEntry key={workout.id} workout={workout} />
         ))}

@@ -18,7 +18,7 @@ export default function Sidebar() {
   const { data: user } = useQuery(getUserQueryOptions);
 
   return (
-    <div className="flex flex-col space-y-4 border-b bg-white pb-4 text-gray-900 md:flex-[20_1_0] md:border-b-0 md:border-r md:pb-0 2xl:flex-[10_1_0]">
+    <div className="flex flex-col space-y-4 border-b bg-white pb-4 text-gray-900 md:flex-[20_1_0] md:border-r md:border-b-0 md:pb-0 2xl:flex-[10_1_0]">
       <div className="flex items-center space-x-2 border-b p-4">
         <MoveUpRightIcon className="size-10" />
         <h1 className="text-2xl font-semibold text-black">Span</h1>
@@ -30,7 +30,7 @@ export default function Sidebar() {
         </div>
       </div>
       <nav>
-        <ul className="flex flex-row space-x-4 overflow-x-scroll px-4 md:flex-col md:space-x-0 md:space-y-2 md:overflow-hidden">
+        <ul className="flex flex-row space-x-4 overflow-x-scroll px-4 md:flex-col md:space-y-2 md:space-x-0 md:overflow-hidden">
           <li>
             <Link
               to="/"
