@@ -435,7 +435,10 @@ function ExerciseTypeCombobox({
             className="cursor-pointer px-3 py-2 data-[selected=true]:bg-gray-100"
             onSelect={(value) => {
               exerciseTypeIdField.handleChange(value);
-              setInput("");
+              setInput(
+                exerciseTypes?.find((exerciseType) => exerciseType.id === value)
+                  ?.name ?? "",
+              );
             }}
           >
             {exerciseType.name}
