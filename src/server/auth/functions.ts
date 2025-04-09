@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { createServerFn } from "@tanstack/start";
+import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie } from "vinxi/http";
 import { validateSessionToken } from "~/server/auth";
 

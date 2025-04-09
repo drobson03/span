@@ -69,10 +69,26 @@ export default function WorkoutForm({
   }, [workout]);
 
   const form = useForm({
-    defaultValues: defaultValues satisfies WorkoutFormData as WorkoutFormData,
+    defaultValues: {
+      datetime: format(workout?.date ?? new Date(), "yyyy-MM-dd'T'HH:mm"),
+      notes: workout?.notes ?? "",
+      exercises:
+        workout?.exercises.map((exercise) => ({
+          weight: String(exercise.weight),
+          notes: exercise.notes ?? "",
+          targetReps: exercise.targetReps,
+          exerciseTypeId: exercise.exerciseTypeId,
+          sets: exercise.sets.map((set) => ({
+            reps: set.reps,
+          })),
+        })) ?? [],
+    },
     onSubmit: async ({ value }) => {
       await upsertWorkoutMutation.mutateAsync({
         ...value,
+        ...(workout
+          ? { id: workout.id, action: "edit" }
+          : { action: "create" }),
         datetime: parse(
           value.datetime,
           "yyyy-MM-dd'T'HH:mm",

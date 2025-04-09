@@ -1,4 +1,4 @@
-import { createAPIFileRoute } from "@tanstack/start/api";
+import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { OAuth2RequestError, decodeIdToken } from "arctic";
 import { eq } from "drizzle-orm";
 import { email, object, parse, pipe, string } from "valibot";
