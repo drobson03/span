@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { authClient } from "~/client/auth";
 import GoogleIcon from "~/components/icons/google";
 import MoveUpRightIcon from "~/components/icons/span";
 
@@ -14,13 +15,16 @@ function Login() {
           <MoveUpRightIcon className="size-10" />
           <h1 className="text-2xl font-semibold text-black">Span</h1>
         </div>
-        <a
+        <button
+          type="button"
           className="flex w-full items-center justify-between border px-3 py-2 transition-colors hover:bg-gray-50"
-          href="/api/auth/google/login"
+          onClick={async () => {
+            await authClient.signIn.social({ provider: "google" });
+          }}
         >
           Login with Google
           <GoogleIcon className="size-8" />
-        </a>
+        </button>
       </div>
     </div>
   );

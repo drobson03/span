@@ -1,35 +1,17 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { getCookie, setCookie } from "vinxi/http";
-import { validateSessionToken } from "~/server/auth";
+import { getWebRequest } from "@tanstack/react-start/server";
+import { auth } from "../auth";
 
 export const getUser = createServerFn({ method: "GET" }).handler(async () => {
-  const token = getCookie("auth_session");
-  if (!token) {
-    return { session: null, user: null };
-  }
+  const request = getWebRequest()!;
 
-  const { session, user } = await validateSessionToken(token);
+  const session = await auth.api.getSession({
+    headers: request.headers,
+    query: { disableCookieCache: true },
+  });
 
-  if (session) {
-    setCookie("auth_session", token, {
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      expires: session.expiresAt,
-      sameSite: "lax",
-    });
-  } else {
-    setCookie("auth_session", "", {
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 0,
-    });
-  }
-
-  return { session, user };
+  return { session: session?.session, user: session?.user };
 });
 
 export const getUserQueryOptions = queryOptions({
