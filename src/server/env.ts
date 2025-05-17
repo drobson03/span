@@ -1,10 +1,10 @@
-import { url, object, parse, pipe, string } from "valibot";
+import { object, parse, string } from "valibot";
 
 const EnvSchema = object({
+  BETTER_AUTH_SECRET: string(),
   DATABASE_URL: string(),
   GOOGLE_CLIENT_ID: string(),
   GOOGLE_CLIENT_SECRET: string(),
-  GOOGLE_REDIRECT_URI: pipe(string(), url()),
 });
 
 export const env = parse(EnvSchema, process.env);
