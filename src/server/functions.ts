@@ -22,7 +22,6 @@ import {
   type Workout,
   type WorkoutWithRelations,
   exercise,
-  set as setTable,
   workout as workoutTable,
 } from "~/server/db/schema";
 
@@ -90,7 +89,7 @@ export const getWorkoutsByDateForMonth = createServerFn({
           return and(
             eq(workouts.userId, user.id),
             eq(
-              sql`strftime('%Y-%m', ${workouts.date}, 'unixepoch')`,
+              sql`to_char(${workouts.date}, 'YYYY-MM')`,
               format(monthDate, "yyyy-MM"),
             ),
           );
@@ -119,7 +118,6 @@ async function getWorkoutsFn() {
       exercises: {
         with: {
           exerciseType: true,
-          sets: true,
         },
       },
     },
@@ -234,18 +232,6 @@ export const createWorkout = createServerFn({ method: "POST" })
     if (exercises.length === 0) {
       return;
     }
-
-    await db
-      .insert(setTable)
-      .values(
-        workout.exercises.flatMap((exercise, i) =>
-          exercise.sets.map((set) => ({
-            ...set,
-            exerciseId: exercises[i]!.id,
-          })),
-        ),
-      )
-      .returning({ id: setTable.id });
   });
 
 export const updateWorkout = createServerFn({ method: "POST" })
@@ -283,7 +269,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
     await db.delete(exercise).where(eq(exercise.workoutId, workout.id));
 
     if (workout.exercises.length > 0) {
-      const exercises = await db
+      await db
         .insert(exercise)
         .values(
           workout.exercises.map((ex) => ({
@@ -292,18 +278,10 @@ export const updateWorkout = createServerFn({ method: "POST" })
             weight: Number.parseFloat(ex.weight),
             targetReps: ex.targetReps,
             notes: ex.notes || null,
+            sets: ex.sets,
           })),
         )
         .returning({ id: exercise.id });
-
-      await db.insert(setTable).values(
-        workout.exercises.flatMap((ex, i) =>
-          ex.sets.map((set) => ({
-            exerciseId: exercises[i]!.id,
-            reps: set.reps,
-          })),
-        ),
-      );
     }
   });
 
@@ -339,7 +317,6 @@ export const getWorkout = createServerFn({ method: "GET" })
         exercises: {
           with: {
             exerciseType: true,
-            sets: true,
           },
         },
       },

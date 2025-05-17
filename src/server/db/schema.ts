@@ -1,37 +1,55 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   index,
   integer,
   real,
-  sqliteTable,
+  pgTable,
+  timestamp,
+  jsonb,
+  varchar,
   text,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 
-export const workout = sqliteTable(
+export const user = pgTable("user", {
+  id: varchar("id", { length: 21 })
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  name: varchar("name").notNull(),
+  email: varchar("email").notNull(),
+  googleId: varchar("google_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export type User = typeof user.$inferSelect;
+
+export type InsertUser = typeof user.$inferInsert;
+
+export const workout = pgTable(
   "workout",
   {
-    id: text("id")
+    id: varchar("id", { length: 21 })
       .primaryKey()
       .$defaultFn(() => nanoid()),
-    userId: text("user_id")
+    userId: varchar("user_id", { length: 21 })
       .notNull()
       .references(() => user.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
     notes: text("notes"),
-    date: integer("date", { mode: "timestamp" }).notNull(),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    date: timestamp("date").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
       .notNull()
-      .default(sql`(unixepoch())`),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
-  (workout) => ({
-    userIdIdx: index("workout_user_id_idx").on(workout.userId),
-  }),
+  (table) => [index("workout_user_id_idx").on(table.userId)],
 );
 
 export type Workout = typeof workout.$inferSelect;
@@ -46,11 +64,11 @@ export const workoutRelations = relations(workout, ({ one, many }) => ({
   exercises: many(exercise),
 }));
 
-export const exerciseType = sqliteTable("exercise_type", {
-  id: text("id")
+export const exerciseType = pgTable("exercise_type", {
+  id: varchar("id", { length: 21 })
     .primaryKey()
     .$defaultFn(() => nanoid()),
-  name: text("name").notNull(),
+  name: varchar("name").notNull(),
 });
 
 export type ExerciseType = typeof exerciseType.$inferSelect;
@@ -61,41 +79,44 @@ export const exerciseTypeRelations = relations(exerciseType, ({ many }) => ({
   exercises: many(exercise),
 }));
 
-export const exercise = sqliteTable(
+export type WorkoutSet = {
+  reps: number;
+};
+
+export const exercise = pgTable(
   "exercise",
   {
-    id: text("id")
+    id: varchar("id", { length: 21 })
       .primaryKey()
       .$defaultFn(() => nanoid()),
     targetReps: integer("target_reps").notNull(),
     weight: real("weight").notNull(),
     notes: text("notes"),
-    workoutId: text("workout_id")
+    sets: jsonb("sets").$type<WorkoutSet[]>().notNull(),
+    workoutId: varchar("workout_id", { length: 21 })
       .notNull()
       .references(() => workout.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
-    exerciseTypeId: text("exercise_type_id")
+    exerciseTypeId: varchar("exercise_type_id", { length: 21 })
       .notNull()
       .references(() => exerciseType.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
   },
-  (exercise) => ({
-    workoutIdIdx: index("exercise_workout_id_idx").on(exercise.workoutId),
-    exerciseTypeIdIdx: index("exercise_exercise_type_id_idx").on(
-      exercise.exerciseTypeId,
-    ),
-  }),
+  (table) => [
+    index("exercise_workout_id_idx").on(table.workoutId),
+    index("exercise_exercise_type_id_idx").on(table.exerciseTypeId),
+  ],
 );
 
 export type Exercise = typeof exercise.$inferSelect;
 
 export type InsertExercise = typeof exercise.$inferInsert;
 
-export const exerciseRelations = relations(exercise, ({ one, many }) => ({
+export const exerciseRelations = relations(exercise, ({ one }) => ({
   workout: one(workout, {
     fields: [exercise.workoutId],
     references: [workout.id],
@@ -104,80 +125,26 @@ export const exerciseRelations = relations(exercise, ({ one, many }) => ({
     fields: [exercise.exerciseTypeId],
     references: [exerciseType.id],
   }),
-  sets: many(set),
 }));
-
-export const set = sqliteTable(
-  "set",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => nanoid()),
-    reps: integer("reps").notNull(),
-    exerciseId: text("exercise_id")
-      .notNull()
-      .references(() => exercise.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade",
-      }),
-  },
-  (set) => ({
-    exerciseIdIdx: index("set_exercise_id_idx").on(set.exerciseId),
-  }),
-);
-
-export type WorkoutSet = typeof set.$inferSelect;
-
-export type InsertSet = typeof set.$inferInsert;
-
-export const setRelations = relations(set, ({ one }) => ({
-  exercise: one(exercise, {
-    fields: [set.exerciseId],
-    references: [exercise.id],
-  }),
-}));
-
-export const user = sqliteTable("user", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => nanoid()),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  googleId: text("google_id").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch())`),
-});
-
-export type User = typeof user.$inferSelect;
-
-export type InsertUser = typeof user.$inferInsert;
 
 export const userRelations = relations(user, ({ many }) => ({
   workouts: many(workout),
   sessions: many(session),
 }));
 
-export const session = sqliteTable(
+export const session = pgTable(
   "session",
   {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
+    id: varchar("id").primaryKey(),
+    userId: varchar("user_id", { length: 21 })
       .notNull()
       .references(() => user.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
       }),
-    expiresAt: integer("expires_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
+    expiresAt: timestamp("expires_at").notNull(),
   },
-  (session) => ({
-    userIdIdx: index("session_user_id_idx").on(session.userId),
-  }),
+  (table) => [index("session_user_id_idx").on(table.userId)],
 );
 
 export type Session = typeof session.$inferSelect;
@@ -193,7 +160,6 @@ export const sessionRelations = relations(session, ({ one }) => ({
 
 export type ExerciseWithRelations = Exercise & {
   exerciseType: ExerciseType;
-  sets: WorkoutSet[];
 };
 
 export type WorkoutWithRelations = Workout & {

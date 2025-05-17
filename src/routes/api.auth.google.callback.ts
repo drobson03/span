@@ -1,6 +1,5 @@
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { OAuth2RequestError, decodeIdToken } from "arctic";
-import { eq } from "drizzle-orm";
 import { email, object, parse, pipe, string } from "valibot";
 import { getCookie, getQuery, setCookie } from "vinxi/http";
 import { createSession, generateSessionToken, google } from "~/server/auth";
@@ -33,11 +32,9 @@ export const APIRoute = createAPIFileRoute("/api/auth/google/callback")({
       const tokens = await google.validateAuthorizationCode(code, codeVerifier);
       const claims = parse(GoogleUserSchema, decodeIdToken(tokens.idToken()));
 
-      const existingUser = await db
-        .select()
-        .from(user)
-        .where(eq(user.googleId, claims.sub))
-        .get();
+      const existingUser = await db.query.user.findFirst({
+        where: (users, { eq }) => eq(users.googleId, claims.sub),
+      });
 
       if (existingUser) {
         const sessionToken = generateSessionToken();
@@ -66,7 +63,7 @@ export const APIRoute = createAPIFileRoute("/api/auth/google/callback")({
           email: claims.email,
           googleId: claims.sub,
         })
-        .returning({ id: user.id });
+        .returning();
 
       if (newUser.length < 1) {
         return new Response(null, {

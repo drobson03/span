@@ -31,9 +31,9 @@ export default function WorkoutEntry({
             </p>
             <p className="text-gray-600">{exercise.notes}</p>
             <ul className="mt-2 flex flex-row space-x-2">
-              {exercise.sets.map((set) => (
+              {exercise.sets.map((set, i) => (
                 <li
-                  key={set.id}
+                  key={i}
                   className="inline-flex size-10 items-center justify-center border bg-white"
                 >
                   {set.reps}

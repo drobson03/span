@@ -1,15 +1,8 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "~/server/db/schema";
 import { env } from "~/server/env";
 
-export const db = drizzle(
-  createClient({
-    url: env.DATABASE_URL,
-    authToken: env.DATABASE_AUTH_TOKEN,
-  }),
-  {
-    schema,
-    logger: process.env.NODE_ENV !== "production",
-  },
-);
+export const db = drizzle(env.DATABASE_URL, {
+  schema,
+  logger: process.env.NODE_ENV !== "production",
+});
