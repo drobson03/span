@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  index,
   integer,
   jsonb,
   pgTable,
@@ -11,24 +12,31 @@ import {
 import { nanoid } from "nanoid";
 import { user } from "./auth";
 
-export const workout = pgTable("workout", {
-  id: varchar("id", { length: 21 })
-    .primaryKey()
-    .$defaultFn(() => nanoid()),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
-  notes: text("notes"),
-  date: timestamp("date").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at")
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const workout = pgTable(
+  "workout",
+  {
+    id: varchar("id", { length: 21 })
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    notes: text("notes"),
+    date: timestamp("date").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("workouts_user_id_idx").on(table.userId),
+    index("workouts_date_idx").on(table.date),
+  ],
+);
 
 export type Workout = typeof workout.$inferSelect;
 
@@ -61,27 +69,34 @@ export type WorkoutSet = {
   reps: number;
 };
 
-export const exercise = pgTable("exercise", {
-  id: varchar("id", { length: 21 })
-    .primaryKey()
-    .$defaultFn(() => nanoid()),
-  targetReps: integer("target_reps").notNull(),
-  weight: real("weight").notNull(),
-  notes: text("notes"),
-  sets: jsonb("sets").$type<WorkoutSet[]>().notNull(),
-  workoutId: varchar("workout_id", { length: 21 })
-    .notNull()
-    .references(() => workout.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
-  exerciseTypeId: varchar("exercise_type_id", { length: 21 })
-    .notNull()
-    .references(() => exerciseType.id, {
-      onDelete: "cascade",
-      onUpdate: "cascade",
-    }),
-});
+export const exercise = pgTable(
+  "exercise",
+  {
+    id: varchar("id", { length: 21 })
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    targetReps: integer("target_reps").notNull(),
+    weight: real("weight").notNull(),
+    notes: text("notes"),
+    sets: jsonb("sets").$type<WorkoutSet[]>().notNull(),
+    workoutId: varchar("workout_id", { length: 21 })
+      .notNull()
+      .references(() => workout.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+    exerciseTypeId: varchar("exercise_type_id", { length: 21 })
+      .notNull()
+      .references(() => exerciseType.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      }),
+  },
+  (table) => [
+    index("exercises_workout_id_idx").on(table.workoutId),
+    index("exercises_exercise_type_id_idx").on(table.exerciseTypeId),
+  ],
+);
 
 export type Exercise = typeof exercise.$inferSelect;
 
