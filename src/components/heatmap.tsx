@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { add, endOfWeek, format, isBefore, isSameDay } from "date-fns";
 import { useMemo } from "react";
-import { getWorkoutsByDateQueryOptions } from "~/server/functions";
-import { cn } from "~/utils";
+import { getWorkoutsByDateQueryOptions } from "~/lib/server/functions";
+import { cn } from "~/lib/utils";
 
 export default function Heatmap() {
   const today = new Date();

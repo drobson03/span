@@ -6,7 +6,7 @@ import {
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import tailwind from "~/app.css?url";
-import { getUser } from "~/server/auth/functions";
+import { getUser } from "~/lib/server/auth/functions";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {

@@ -5,7 +5,7 @@ import WorkoutForm from "~/components/workouts/form";
 import {
   getExerciseTypesQueryOptions,
   getWorkoutQueryOptions,
-} from "~/server/functions";
+} from "~/lib/server/functions";
 
 export const Route = createFileRoute("/_authed/workouts/edit/$id")({
   loader: async ({ context, params }) => {

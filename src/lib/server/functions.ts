@@ -16,14 +16,14 @@ import {
   string,
   variant,
 } from "valibot";
-import { getUser } from "~/server/auth/functions";
-import { db } from "~/server/db";
+import { getUser } from "~/lib/server/auth/functions";
+import { db } from "~/lib/server/db";
 import {
   type Workout,
   type WorkoutWithRelations,
   exercise,
   workout as workoutTable,
-} from "~/server/db/schema";
+} from "~/lib/server/db/schema";
 
 function reduceWorkoutsByDate(workouts: Workout[]) {
   return workouts.reduce(

@@ -10,9 +10,9 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import type { Workout } from "~/server/db/schema";
-import { deleteWorkout } from "~/server/functions";
-import { twx } from "~/utils/twx";
+import type { Workout } from "~/lib/server/db/schema";
+import { deleteWorkout } from "~/lib/server/functions";
+import { twx } from "~/lib/utils";
 
 const WorkoutMenuButton = twx(Item)`
   flex cursor-pointer items-center gap-2 px-3 py-2 outline-hidden transition-colors hover:bg-gray-100

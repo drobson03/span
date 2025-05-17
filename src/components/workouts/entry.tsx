@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import WorkoutMenu from "~/components/workouts/menu";
-import type { WorkoutWithRelations } from "~/server/db/schema";
+import type { WorkoutWithRelations } from "~/lib/server/db/schema";
 
 const kgFormatter = Intl.NumberFormat(undefined, {
   minimumFractionDigits: 1,

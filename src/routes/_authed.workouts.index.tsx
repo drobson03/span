@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import WorkoutEntry from "~/components/workouts/entry";
-import { getWorkoutsQueryOptions } from "~/server/functions";
+import { getWorkoutsQueryOptions } from "~/lib/server/functions";
 
 export const Route = createFileRoute("/_authed/workouts/")({
   loader: async ({ context }) => {

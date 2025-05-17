@@ -9,8 +9,8 @@ import {
   startOfISOWeek,
 } from "date-fns";
 import { useMemo } from "react";
-import { getWorkoutsByDateForMonthQueryOptions } from "~/server/functions";
-import { chunk, cn } from "~/utils";
+import { getWorkoutsByDateForMonthQueryOptions } from "~/lib/server/functions";
+import { chunk, cn } from "~/lib/utils";
 
 function getDatesForCalendarView(month: Date) {
   let startDate = startOfISOWeek(month);

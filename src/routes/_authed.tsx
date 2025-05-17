@@ -1,6 +1,6 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import Sidebar from "~/components/sidebar";
-import { getUserQueryOptions } from "~/server/auth/functions";
+import { getUserQueryOptions } from "~/lib/server/auth/functions";
 
 export const Route = createFileRoute("/_authed")({
   beforeLoad: async ({ context }) => {

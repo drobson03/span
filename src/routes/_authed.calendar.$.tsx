@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { addMonths, parse, set, subMonths } from "date-fns";
 import Calendar from "~/components/calendar";
 import CalendarHeader from "~/components/calendar/header";
-import { getWorkoutsByDateForMonthQueryOptions } from "~/server/functions";
+import { getWorkoutsByDateForMonthQueryOptions } from "~/lib/server/functions";
 
 export const Route = createFileRoute("/_authed/calendar/$")({
   loader: async ({ context, params }) => {

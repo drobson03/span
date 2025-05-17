@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getWebRequest } from "@tanstack/react-start/server";
-import { auth } from "../auth";
+import { auth } from "~/lib/server/auth";
 
 export const getUser = createServerFn({ method: "GET" }).handler(async () => {
   const request = getWebRequest()!;

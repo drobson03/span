@@ -11,13 +11,13 @@ import { Command } from "cmdk";
 import { format, parse } from "date-fns";
 import { useMemo, useState } from "react";
 import { maxLength, minValue, number, pipe, string, transform } from "valibot";
-import type { WorkoutWithRelations } from "~/server/db/schema";
+import type { WorkoutWithRelations } from "~/lib/server/db/schema";
 import {
   type WorkoutFormData,
   createWorkout,
   getExerciseTypesQueryOptions,
   updateWorkout,
-} from "~/server/functions";
+} from "~/lib/server/functions";
 import Spinner from "../spinner";
 
 function FieldInfo(props: { field: AnyFieldApi }) {

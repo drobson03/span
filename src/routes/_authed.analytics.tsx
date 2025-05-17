@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { add, endOfWeek, } from "date-fns";
+import { add, endOfWeek } from "date-fns";
 import Heatmap from "~/components/heatmap";
-import { getWorkoutsByDateQueryOptions } from "~/server/functions";
+import { getWorkoutsByDateQueryOptions } from "~/lib/server/functions";
 
 export const Route = createFileRoute("/_authed/analytics")({
   loader: async ({ context }) => {

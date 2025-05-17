@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 import DumbbellIcon from "~/components/icons/dumbbell";
 import GaugeIcon from "~/components/icons/gauge";
 import MoveUpRightIcon from "~/components/icons/span";
-import { getUserQueryOptions } from "~/server/auth/functions";
+import { getUserQueryOptions } from "~/lib/server/auth/functions";
 
 const SIDEBAR_LINK_CLASSNAME =
   "flex flex-row items-center gap-2 px-3 py-2 text-lg transition-colors";

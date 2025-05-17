@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { authClient } from "~/client/auth";
+import { authClient } from "~/lib/client/auth";
 import GoogleIcon from "~/components/icons/google";
 import MoveUpRightIcon from "~/components/icons/span";
 

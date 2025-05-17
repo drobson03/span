@@ -2,8 +2,8 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
 import { reactStartCookies } from "better-auth/react-start";
-import { db } from "./db";
-import { env } from "./env";
+import { db } from "~/lib/server/db";
+import { env } from "~/lib/server/env";
 
 export const auth = betterAuth({
   emailAndPassword: {
