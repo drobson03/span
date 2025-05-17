@@ -1,12 +1,12 @@
 import { relations } from "drizzle-orm";
 import {
   integer,
-  real,
-  pgTable,
-  timestamp,
   jsonb,
-  varchar,
+  pgTable,
+  real,
   text,
+  timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 import { user } from "./auth";

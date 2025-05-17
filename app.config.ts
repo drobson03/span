@@ -10,4 +10,9 @@ export default defineConfig({
   tsr: {
     appDirectory: "./src",
   },
+  react: {
+    babel: {
+      plugins: [["babel-plugin-react-compiler", {}]],
+    },
+  },
 });

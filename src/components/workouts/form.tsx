@@ -7,6 +7,7 @@ import { useForm } from "@tanstack/react-form";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { Command } from "cmdk";
 import { format, parse } from "date-fns";
 import { useMemo, useState } from "react";
 import { maxLength, minValue, number, pipe, string, transform } from "valibot";
@@ -18,7 +19,6 @@ import {
   updateWorkout,
 } from "~/server/functions";
 import Spinner from "../spinner";
-import { Command } from "cmdk";
 
 function FieldInfo(props: { field: AnyFieldApi }) {
   return props.field.state.meta.errors ? (
@@ -44,29 +44,6 @@ export default function WorkoutForm({
       await navigate({ to: "/workouts" });
     },
   });
-
-  const defaultValues = useMemo(() => {
-    if (workout) {
-      return {
-        ...workout,
-        action: "edit" as const,
-        datetime: format(workout.date, "yyyy-MM-dd'T'HH:mm"),
-        notes: workout.notes ?? "",
-        exercises: workout.exercises.map((exercise) => ({
-          ...exercise,
-          weight: String(exercise.weight),
-          notes: exercise.notes ?? "",
-        })),
-      };
-    }
-
-    return {
-      action: "create" as const,
-      datetime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
-      notes: "",
-      exercises: [],
-    };
-  }, [workout]);
 
   const form = useForm({
     defaultValues: {
