@@ -262,6 +262,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
       .update(workoutTable)
       .set({
         notes: workout.notes || null,
+        date: new Date(workout.datetime),
         updatedAt: new Date(),
       })
       .where(eq(workoutTable.id, workout.id));
