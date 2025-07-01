@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { Button } from "~/components/ui/button";
 import WorkoutEntry from "~/components/workouts/entry";
 import WorkoutFilter from "~/components/workouts/filter";
@@ -17,32 +17,40 @@ function Workouts() {
   const { data: workouts } = useQuery(getWorkoutsQueryOptions);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const { filteredWorkouts, availableTags } = useMemo(() => {
-    if (!workouts) return { filteredWorkouts: [], availableTags: [] };
+  // Memoize available tags extraction separately for better performance
+  const availableTags = useMemo(() => {
+    if (!workouts) return [];
 
-    // Get all unique tags from workouts
     const allTags = new Set<string>();
     for (const workout of workouts) {
       if (workout.tags) {
-        for (const tag of workout.tags) {
-          allTags.add(tag);
-        }
+        workout.tags.forEach((tag) => allTags.add(tag));
       }
     }
 
-    // Filter workouts based on selected tags
-    const filtered =
-      selectedTags.length === 0
-        ? workouts
-        : workouts.filter((workout) =>
-            selectedTags.every((tag) => workout.tags?.includes(tag)),
-          );
+    return Array.from(allTags).sort();
+  }, [workouts]);
 
-    return {
-      filteredWorkouts: filtered,
-      availableTags: Array.from(allTags).sort(),
-    };
+  // Memoize filtered workouts with optimized filtering logic
+  const filteredWorkouts = useMemo(() => {
+    if (!workouts) return [];
+    if (selectedTags.length === 0) return workouts;
+
+    // Convert selectedTags to Set for O(1) lookup
+    const selectedTagsSet = new Set(selectedTags);
+
+    return workouts.filter((workout) => {
+      if (!workout.tags || workout.tags.length === 0) return false;
+
+      // Check if workout has ALL selected tags (AND logic)
+      return selectedTags.every((tag) => workout.tags!.includes(tag));
+    });
   }, [workouts, selectedTags]);
+
+  // Memoize the tags change handler to prevent unnecessary re-renders
+  const handleTagsChange = useCallback((tags: string[]) => {
+    setSelectedTags(tags);
+  }, []);
 
   const remainder = useMemo(
     () => 5 - ((filteredWorkouts?.length ?? 0) % 5),
@@ -61,7 +69,7 @@ function Workouts() {
         <WorkoutFilter
           availableTags={availableTags}
           selectedTags={selectedTags}
-          onTagsChange={setSelectedTags}
+          onTagsChange={handleTagsChange}
         />
       </div>
       {filteredWorkouts?.map((workout) => (

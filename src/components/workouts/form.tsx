@@ -7,7 +7,7 @@ import {
   ArrowUpIcon,
   XIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import * as v from "valibot";
 import { useAppForm } from "~/hooks/form";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
@@ -75,6 +75,39 @@ export default function WorkoutForm({
   const [newTag, setNewTag] = useState<string>("");
   const [availableTags, setAvailableTags] =
     useState<{ id: string; label: string }[]>(defaultTags);
+
+  // Debounce search input
+  const [debouncedNewTag, setDebouncedNewTag] = useState<string>("");
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleTagSearchChange = useCallback((value: string) => {
+    setNewTag(value);
+
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Set debounced value after 300ms
+    debounceTimeoutRef.current = setTimeout(() => {
+      setDebouncedNewTag(value);
+    }, 300);
+  }, []);
+
+  // Create a map for faster tag lookups
+  const tagMap = useMemo(() => {
+    return new Map(availableTags.map((tag) => [tag.id, tag]));
+  }, [availableTags]);
+
+  // Memoize filtered tags to avoid recalculating on every render
+  const filteredTags = useMemo(() => {
+    if (!debouncedNewTag.trim()) return availableTags;
+
+    const searchTerm = debouncedNewTag.toLowerCase();
+    return availableTags.filter((tag) =>
+      tag.label.toLowerCase().includes(searchTerm),
+    );
+  }, [availableTags, debouncedNewTag]);
 
   const upsertWorkoutMutation = useMutation({
     mutationFn: async (data: WorkoutFormData) =>
@@ -144,57 +177,62 @@ export default function WorkoutForm({
         </form.AppField>
         <form.AppField name="tags">
           {(field) => {
-            const handleRemove = (value: string) => {
-              if (!field.state.value.includes(value)) {
-                return;
-              }
-              field.handleChange(field.state.value.filter((v) => v !== value));
-            };
+            // Memoize handlers to prevent unnecessary re-renders
+            const handleRemove = useCallback(
+              (value: string) => {
+                if (!field.state.value.includes(value)) {
+                  return;
+                }
+                field.handleChange(
+                  field.state.value.filter((v) => v !== value),
+                );
+              },
+              [field.state.value, field.handleChange],
+            );
 
-            const handleSelect = (value: string) => {
-              if (field.state.value.includes(value)) {
-                handleRemove(value);
-                return;
-              }
-              field.handleChange([...field.state.value, value]);
-            };
+            const handleSelect = useCallback(
+              (value: string) => {
+                if (field.state.value.includes(value)) {
+                  handleRemove(value);
+                  return;
+                }
+                field.handleChange([...field.state.value, value]);
+              },
+              [field.state.value, field.handleChange, handleRemove],
+            );
 
-            const handleCreateTag = () => {
+            const handleCreateTag = useCallback(() => {
               if (!newTag.trim()) return;
 
               const tagId = newTag.toLowerCase().replace(/\s+/g, "-");
-              setAvailableTags((prev: { id: string; label: string }[]) => [
-                ...prev,
-                { id: tagId, label: newTag },
-              ]);
+              const newTagObj = { id: tagId, label: newTag };
+
+              setAvailableTags((prev) => [...prev, newTagObj]);
               field.handleChange([...field.state.value, tagId]);
               setNewTag("");
-            };
+              setDebouncedNewTag("");
+            }, [newTag, field.state.value, field.handleChange]);
 
-            const filteredTags = availableTags.filter((tag) =>
-              tag.label.toLowerCase().includes(newTag.toLowerCase()),
-            );
+            // Memoize tag values to avoid re-rendering all tags when one changes
+            const tagValues = useMemo(() => {
+              return field.state.value.map((tagId) => {
+                const tag = tagMap.get(tagId);
+                return (
+                  <TagsValue key={tagId} onRemove={() => handleRemove(tagId)}>
+                    {tag?.label || tagId}
+                  </TagsValue>
+                );
+              });
+            }, [field.state.value, tagMap, handleRemove]);
 
             return (
               <div className="col-span-3 space-y-2">
                 <Label htmlFor={field.name}>Tags</Label>
                 <Tags className="w-full">
-                  <TagsTrigger>
-                    {field.state.value.map((tagId) => {
-                      const tag = availableTags.find((t) => t.id === tagId);
-                      return (
-                        <TagsValue
-                          key={tagId}
-                          onRemove={() => handleRemove(tagId)}
-                        >
-                          {tag?.label || tagId}
-                        </TagsValue>
-                      );
-                    })}
-                  </TagsTrigger>
+                  <TagsTrigger>{tagValues}</TagsTrigger>
                   <TagsContent>
                     <TagsInput
-                      onValueChange={setNewTag}
+                      onValueChange={handleTagSearchChange}
                       placeholder="Search or create tag..."
                       value={newTag}
                     />
@@ -218,7 +256,7 @@ export default function WorkoutForm({
                         {filteredTags.map((tag) => (
                           <TagsItem
                             key={tag.id}
-                            onSelect={handleSelect}
+                            onSelect={() => handleSelect(tag.id)}
                             value={tag.id}
                           >
                             {tag.label}

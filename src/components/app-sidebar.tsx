@@ -37,6 +37,9 @@ const navItems = linkOptions([
     title: "Calendar",
     to: "/calendar/$",
     icon: CalendarIcon,
+    params: {
+      _splat: "",
+    },
   },
   {
     title: "Analytics",

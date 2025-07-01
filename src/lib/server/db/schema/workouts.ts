@@ -36,6 +36,8 @@ export const workout = pgTable(
   (table) => [
     index("workouts_user_id_idx").on(table.userId),
     index("workouts_date_idx").on(table.date),
+    index("workouts_tags_idx").using("gin", table.tags),
+    index("workouts_user_tags_idx").on(table.userId, table.tags),
   ],
 );
 

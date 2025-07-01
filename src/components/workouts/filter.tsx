@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { XIcon } from "lucide-react";
@@ -16,19 +16,37 @@ export default function WorkoutFilter({
 }: WorkoutFilterProps) {
   const [showAllTags, setShowAllTags] = useState(false);
 
-  const displayTags = showAllTags ? availableTags : availableTags.slice(0, 6);
+  // Memoize display tags to prevent recalculation
+  const displayTags = useMemo(() => {
+    return showAllTags ? availableTags : availableTags.slice(0, 6);
+  }, [availableTags, showAllTags]);
 
-  const toggleTag = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      onTagsChange(selectedTags.filter((t) => t !== tag));
-    } else {
-      onTagsChange([...selectedTags, tag]);
-    }
-  };
+  // Convert selectedTags to Set for O(1) lookup performance
+  const selectedTagsSet = useMemo(() => {
+    return new Set(selectedTags);
+  }, [selectedTags]);
 
-  const clearAllTags = () => {
+  // Memoize toggle handler to prevent unnecessary re-renders
+  const toggleTag = useCallback(
+    (tag: string) => {
+      if (selectedTagsSet.has(tag)) {
+        onTagsChange(selectedTags.filter((t) => t !== tag));
+      } else {
+        onTagsChange([...selectedTags, tag]);
+      }
+    },
+    [selectedTags, selectedTagsSet, onTagsChange],
+  );
+
+  // Memoize clear handler
+  const clearAllTags = useCallback(() => {
     onTagsChange([]);
-  };
+  }, [onTagsChange]);
+
+  // Memoize show more/less toggle
+  const toggleShowAllTags = useCallback(() => {
+    setShowAllTags((prev) => !prev);
+  }, []);
 
   if (availableTags.length === 0) {
     return null;
@@ -52,7 +70,7 @@ export default function WorkoutFilter({
 
       <div className="flex flex-wrap gap-1">
         {displayTags.map((tag) => {
-          const isSelected = selectedTags.includes(tag);
+          const isSelected = selectedTagsSet.has(tag);
           return (
             <Badge
               key={tag}
@@ -70,7 +88,7 @@ export default function WorkoutFilter({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowAllTags(!showAllTags)}
+            onClick={toggleShowAllTags}
             className="h-auto p-1 text-xs"
           >
             {showAllTags ? "Show less" : `+${availableTags.length - 6} more`}

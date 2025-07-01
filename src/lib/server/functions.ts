@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { format, set } from "date-fns";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import {
   type InferInput,
   array,
@@ -334,4 +334,43 @@ export const getWorkoutQueryOptions = (id: string) =>
     queryKey: ["workouts", id],
     queryFn: async () =>
       (await getWorkout({ data: { id } })) as WorkoutWithRelations | null,
+  });
+
+export const getWorkoutsWithTagFilter = createServerFn({ method: "GET" })
+  .validator(object({ tags: optional(array(string())) }))
+  .handler(async (ctx) => {
+    const { user } = await getUser();
+
+    if (!user) {
+      return [];
+    }
+
+    const { tags } = ctx.data;
+
+    // Base query conditions
+    const conditions = [eq(workoutTable.userId, user.id)];
+
+    // Add tag filtering if tags are provided
+    if (tags && tags.length > 0) {
+      // Use PostgreSQL array contains operator for efficient tag filtering
+      conditions.push(sql`${workoutTable.tags} @> ${tags}`);
+    }
+
+    return await db.query.workout.findMany({
+      orderBy: (workouts, { desc }) => [desc(workouts.date)],
+      where: and(...conditions),
+      with: {
+        exercises: {
+          with: {
+            exerciseType: true,
+          },
+        },
+      },
+    });
+  });
+
+export const getWorkoutsWithTagFilterQueryOptions = (tags?: string[]) =>
+  queryOptions({
+    queryKey: ["workouts", "filtered", tags],
+    queryFn: () => getWorkoutsWithTagFilter({ data: { tags } }),
   });

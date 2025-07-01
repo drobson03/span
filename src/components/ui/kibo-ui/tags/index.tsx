@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { XIcon } from 'lucide-react';
+import { XIcon } from "lucide-react";
 import {
   type ComponentProps,
   createContext,
@@ -10,9 +10,11 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+  useMemo,
+  useCallback,
+} from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -20,13 +22,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '~/components/ui/command';
+} from "~/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '~/components/ui/popover';
-import { cn } from '~/lib/utils';
+} from "~/components/ui/popover";
+import { cn } from "~/lib/utils";
 
 type TagsContextType = {
   value?: string;
@@ -41,7 +43,7 @@ const TagsContext = createContext<TagsContextType>({
   value: undefined,
   setValue: undefined,
   open: false,
-  onOpenChange: () => { },
+  onOpenChange: () => {},
   width: undefined,
   setWidth: undefined,
 });
@@ -50,7 +52,7 @@ const useTagsContext = () => {
   const context = useContext(TagsContext);
 
   if (!context) {
-    throw new Error('useTagsContext must be used within a TagsProvider');
+    throw new Error("useTagsContext must be used within a TagsProvider");
   }
 
   return context;
@@ -76,9 +78,23 @@ export const Tags = ({
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [width, setWidth] = useState<number>();
   const ref = useRef<HTMLDivElement>(null);
+  const isMountedRef = useRef(true);
 
   const open = controlledOpen ?? uncontrolledOpen;
   const onOpenChange = controlledOnOpenChange ?? setUncontrolledOpen;
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      value,
+      setValue,
+      open,
+      onOpenChange,
+      width,
+      setWidth,
+    }),
+    [value, setValue, open, onOpenChange, width],
+  );
 
   useEffect(() => {
     if (!ref.current) {
@@ -86,7 +102,10 @@ export const Tags = ({
     }
 
     const resizeObserver = new ResizeObserver((entries) => {
-      setWidth(entries[0].contentRect.width);
+      // Check if component is still mounted before updating state
+      if (isMountedRef.current && entries[0]) {
+        setWidth(entries[0].contentRect.width);
+      }
     });
 
     resizeObserver.observe(ref.current);
@@ -96,12 +115,17 @@ export const Tags = ({
     };
   }, []);
 
+  // Cleanup mounted ref on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   return (
-    <TagsContext.Provider
-      value={{ value, setValue, open, onOpenChange, width, setWidth }}
-    >
+    <TagsContext.Provider value={contextValue}>
       <Popover onOpenChange={onOpenChange} open={open}>
-        <div className={cn('relative w-full', className)} ref={ref}>
+        <div className={cn("relative w-full", className)} ref={ref}>
           {children}
         </div>
       </Popover>
@@ -118,7 +142,7 @@ export const TagsTrigger = ({
 }: TagsTriggerProps) => (
   <PopoverTrigger asChild>
     <Button
-      className={cn('h-auto w-full justify-between p-2', className)}
+      className={cn("h-auto w-full justify-between p-2", className)}
       // biome-ignore lint/a11y/useSemanticElements: "Required"
       role="combobox"
       variant="outline"
@@ -126,7 +150,7 @@ export const TagsTrigger = ({
     >
       <div className="flex flex-wrap items-center gap-1">
         {children}
-        <span className="px-2 py-px text-muted-foreground">
+        <span className="text-muted-foreground px-2 py-px">
           Select a tag...
         </span>
       </div>
@@ -142,20 +166,24 @@ export const TagsValue = ({
   onRemove,
   ...props
 }: TagsValueProps & { onRemove?: () => void }) => {
-  const handleRemove: MouseEventHandler<HTMLDivElement> = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onRemove?.();
-  };
+  // Memoize the click handler to prevent unnecessary re-renders
+  const handleRemove = useCallback<MouseEventHandler<HTMLDivElement>>(
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onRemove?.();
+    },
+    [onRemove],
+  );
 
   return (
-    <Badge className={cn('flex items-center gap-2', className)} {...props}>
+    <Badge className={cn("flex items-center gap-2", className)} {...props}>
       {children}
       {onRemove && (
         // biome-ignore lint/a11y/noStaticElementInteractions: "This is a clickable badge"
         // biome-ignore lint/a11y/useKeyWithClickEvents: "This is a clickable badge"
         <div
-          className="size-auto cursor-pointer hover:text-muted-foreground"
+          className="hover:text-muted-foreground size-auto cursor-pointer"
           onClick={handleRemove}
         >
           <XIcon size={12} />
@@ -176,7 +204,7 @@ export const TagsContent = ({
 
   return (
     <PopoverContent
-      className={cn('p-0', className)}
+      className={cn("p-0", className)}
       style={{ width }}
       {...props}
     >
@@ -188,13 +216,13 @@ export const TagsContent = ({
 export type TagsInputProps = ComponentProps<typeof CommandInput>;
 
 export const TagsInput = ({ className, ...props }: TagsInputProps) => (
-  <CommandInput className={cn('h-9', className)} {...props} />
+  <CommandInput className={cn("h-9", className)} {...props} />
 );
 
 export type TagsListProps = ComponentProps<typeof CommandList>;
 
 export const TagsList = ({ className, ...props }: TagsListProps) => (
-  <CommandList className={cn('max-h-[200px]', className)} {...props} />
+  <CommandList className={cn("max-h-[200px]", className)} {...props} />
 );
 
 export type TagsEmptyProps = ComponentProps<typeof CommandEmpty>;
@@ -204,7 +232,7 @@ export const TagsEmpty = ({
   className,
   ...props
 }: TagsEmptyProps) => (
-  <CommandEmpty {...props}>{children ?? 'No tags found.'}</CommandEmpty>
+  <CommandEmpty {...props}>{children ?? "No tags found."}</CommandEmpty>
 );
 
 export type TagsGroupProps = ComponentProps<typeof CommandGroup>;
@@ -215,7 +243,7 @@ export type TagsItemProps = ComponentProps<typeof CommandItem>;
 
 export const TagsItem = ({ className, ...props }: TagsItemProps) => (
   <CommandItem
-    className={cn('cursor-pointer items-center justify-between', className)}
+    className={cn("cursor-pointer items-center justify-between", className)}
     {...props}
   />
 );
