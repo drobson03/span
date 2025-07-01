@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { authClient } from "~/lib/client/auth";
+import { MoveUpRightIcon } from "lucide-react";
 import GoogleIcon from "~/components/icons/google";
-import MoveUpRightIcon from "~/components/icons/span";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { authClient } from "~/lib/client/auth";
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -10,22 +12,27 @@ export const Route = createFileRoute("/login")({
 function Login() {
   return (
     <div className="flex h-full min-h-screen w-full flex-col items-center justify-center">
-      <div className="flex w-full flex-col items-center border p-4 sm:max-w-sm md:px-6">
-        <div className="mb-2 flex w-full items-center justify-center space-x-2 p-4">
-          <MoveUpRightIcon className="size-10" />
-          <h1 className="text-2xl font-semibold text-black">Span</h1>
-        </div>
-        <button
-          type="button"
-          className="flex w-full items-center justify-between border px-3 py-2 transition-colors hover:bg-gray-50"
-          onClick={async () => {
-            await authClient.signIn.social({ provider: "google" });
-          }}
-        >
-          Login with Google
-          <GoogleIcon className="size-8" />
-        </button>
-      </div>
+      <Card className="w-full max-w-sm gap-2">
+        <CardHeader>
+          <CardTitle className="flex w-full items-center justify-center gap-x-1">
+            <MoveUpRightIcon className="size-10" />
+            <h1 className="text-2xl font-semibold">Span</h1>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="outline"
+            type="button"
+            className="w-full"
+            onClick={async () => {
+              await authClient.signIn.social({ provider: "google" });
+            }}
+          >
+            Login with Google
+            <GoogleIcon />
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

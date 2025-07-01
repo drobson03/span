@@ -45,8 +45,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
-        <main className="flex h-[100dvh] flex-col md:flex-row">{children}</main>
+      <body className="dark min-h-dvh min-w-dvw">
+        {children}
         <Scripts />
       </body>
     </html>

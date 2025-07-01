@@ -3,6 +3,7 @@ import { add, endOfWeek, format, isBefore, isSameDay } from "date-fns";
 import { useMemo } from "react";
 import { getWorkoutsByDateQueryOptions } from "~/lib/server/functions";
 import { cn } from "~/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export default function Heatmap() {
   const today = new Date();
@@ -28,20 +29,22 @@ export default function Heatmap() {
   }, [today, yearAgo]);
 
   return (
-    <div className="flex w-auto flex-col gap-2 border p-4 md:max-w-min md:px-6">
-      <h2 className="text-2xl font-semibold">Heatmap</h2>
-      <div className="grid grid-flow-col grid-rows-7 gap-1 overflow-x-scroll md:overflow-x-auto">
+    <Card className="flex w-auto flex-col gap-2 border md:max-w-min">
+      <CardHeader>
+        <CardTitle>Heatmap</CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-flow-col grid-rows-7 gap-1 overflow-x-scroll md:overflow-x-auto">
         {dates.map((date) => (
           <div
             key={format(date, "yyyy-MM-dd")}
             className={cn(
-              "size-2.5 border",
-              workouts?.[format(date, "yyyy-MM-dd")]?.length && "bg-black",
-              isSameDay(today, date) && "border-black",
+              "size-3 border",
+              workouts?.[format(date, "yyyy-MM-dd")]?.length && "bg-primary",
+              isSameDay(today, date) && "border-primary",
             )}
           />
         ))}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

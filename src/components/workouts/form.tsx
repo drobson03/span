@@ -1,16 +1,14 @@
-import ArrowDownIcon from "@heroicons/react/16/solid/ArrowDownIcon";
-import ArrowLeftIcon from "@heroicons/react/16/solid/ArrowLeftIcon";
-import ArrowRightIcon from "@heroicons/react/16/solid/ArrowRightIcon";
-import ArrowUpIcon from "@heroicons/react/16/solid/ArrowUpIcon";
-import XMarkIcon from "@heroicons/react/16/solid/XMarkIcon";
-import { useForm } from "@tanstack/react-form";
-import type { AnyFieldApi } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Command } from "cmdk";
-import { format, parse } from "date-fns";
-import { useMemo, useState } from "react";
-import { maxLength, minValue, number, pipe, string, transform } from "valibot";
+import {
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ArrowUpIcon,
+  XIcon,
+} from "lucide-react";
+import * as v from "valibot";
+import { useAppForm } from "~/hooks/form";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
 import {
   type WorkoutFormData,
@@ -18,13 +16,27 @@ import {
   getExerciseTypesQueryOptions,
   updateWorkout,
 } from "~/lib/server/functions";
-import Spinner from "../spinner";
+import { Button } from "../ui/button";
+import { Spinner } from "../ui/kibo-ui/spinner";
+import { Label } from "../ui/label";
 
-function FieldInfo(props: { field: AnyFieldApi }) {
-  return props.field.state.meta.errors ? (
-    <em>{props.field.state.meta.errors.join(", ")}</em>
-  ) : null;
-}
+const formSchema = v.object({
+  datetime: v.date(),
+  notes: v.pipe(v.string(), v.maxLength(1000)),
+  exercises: v.array(
+    v.object({
+      exerciseTypeId: v.string(),
+      weight: v.number("Please enter a valid number"),
+      targetReps: v.number("Please enter a valid number"),
+      notes: v.pipe(v.string(), v.maxLength(1000)),
+      sets: v.array(
+        v.object({ reps: v.number("Please enter a valid number") }),
+      ),
+    }),
+  ),
+});
+
+type FormData = v.InferOutput<typeof formSchema>;
 
 export default function WorkoutForm({
   workout,
@@ -45,13 +57,15 @@ export default function WorkoutForm({
     },
   });
 
-  const form = useForm({
+  const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
+
+  const form = useAppForm({
     defaultValues: {
-      datetime: format(workout?.date ?? new Date(), "yyyy-MM-dd'T'HH:mm"),
+      datetime: workout?.date ?? new Date(),
       notes: workout?.notes ?? "",
       exercises:
         workout?.exercises.map((exercise) => ({
-          weight: String(exercise.weight),
+          weight: exercise.weight,
           notes: exercise.notes ?? "",
           targetReps: exercise.targetReps,
           exerciseTypeId: exercise.exerciseTypeId,
@@ -59,6 +73,10 @@ export default function WorkoutForm({
             reps: set.reps,
           })),
         })) ?? [],
+    } as FormData satisfies FormData,
+    validators: {
+      onChange: formSchema,
+      onBlur: formSchema,
     },
     onSubmit: async ({ value }) => {
       await upsertWorkoutMutation.mutateAsync({
@@ -66,80 +84,33 @@ export default function WorkoutForm({
         ...(workout
           ? { id: workout.id, action: "edit" }
           : { action: "create" }),
-        datetime: parse(
-          value.datetime,
-          "yyyy-MM-dd'T'HH:mm",
-          new Date(),
-        ).toISOString(),
+        datetime: value.datetime.toISOString(),
+        exercises: value.exercises.map((exercise) => ({
+          ...exercise,
+          weight: exercise.weight.toString(),
+        })),
       });
     },
   });
 
   return (
     <form
-      className="flex flex-col gap-[0.0625rem] border-b bg-gray-200 md:grid md:grid-cols-4 md:place-items-stretch"
+      className="bg-border flex flex-col gap-[0.0625rem] md:grid md:grid-cols-4 md:place-items-stretch"
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
         void form.handleSubmit();
       }}
     >
-      <div className="col-span-4 grid grid-cols-3 place-items-stretch gap-4 bg-white p-4 md:px-6">
-        <form.Field name="datetime">
-          {(datetimeField) => {
-            return (
-              <>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor={datetimeField.name}>Date &amp; Time</label>
-                  <FieldInfo field={datetimeField} />
-                </div>
-                <input
-                  className="col-span-2 border-gray-200 focus:border-black focus:ring-black"
-                  id={datetimeField.name}
-                  name={datetimeField.name}
-                  value={datetimeField.state.value}
-                  type="datetime-local"
-                  onBlur={datetimeField.handleBlur}
-                  onInput={(e) =>
-                    datetimeField.handleChange(
-                      (e.target as HTMLInputElement).value,
-                    )
-                  }
-                />
-              </>
-            );
-          }}
-        </form.Field>
-        <form.Field
-          name="notes"
-          validators={{
-            onChange: pipe(string(), maxLength(1000)),
-          }}
-        >
-          {(notesField) => {
-            return (
-              <>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor={notesField.name}>Notes</label>
-                  <FieldInfo field={notesField} />
-                </div>
-                <textarea
-                  className="col-span-2 border-gray-200 focus:border-black focus:ring-black"
-                  id={notesField.name}
-                  name={notesField.name}
-                  value={notesField.state.value}
-                  onBlur={notesField.handleBlur}
-                  onInput={(e) =>
-                    notesField.handleChange(
-                      (e.target as HTMLTextAreaElement).value,
-                    )
-                  }
-                  rows={4}
-                />
-              </>
-            );
-          }}
-        </form.Field>
+      <div className="bg-background col-span-4 flex grid-cols-3 flex-col place-items-stretch gap-4 p-4 md:grid md:px-6">
+        <form.AppField name="datetime">
+          {(field) => (
+            <field.DatePickerField label="Date & Time" type="datetime" />
+          )}
+        </form.AppField>
+        <form.AppField name="notes">
+          {(field) => <field.TextareaField label="Notes" rows={4} />}
+        </form.AppField>
         <form.Subscribe
           selector={(state) => ({
             canSubmit: state.canSubmit,
@@ -148,13 +119,14 @@ export default function WorkoutForm({
         >
           {(state) => {
             return (
-              <button
-                className="col-span-3 ml-auto h-12 max-w-min border px-4 py-1 text-center transition-colors hover:bg-gray-50"
+              <Button
+                variant="outline"
+                className="col-span-3 ml-auto max-w-min"
                 type="submit"
                 disabled={!state.canSubmit}
               >
                 {state.isSubmitting ? <Spinner className="size-4" /> : "Save"}
-              </button>
+              </Button>
             );
           }}
         </form.Subscribe>
@@ -167,9 +139,23 @@ export default function WorkoutForm({
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
                     key={i}
-                    className="flex flex-col gap-1 bg-white p-4 md:px-6"
+                    className="bg-background flex flex-col gap-2 p-4 md:px-6"
                   >
-                    <form.Field
+                    <form.AppField name={`exercises[${i}].exerciseTypeId`}>
+                      {(field) => (
+                        <field.ComboboxField
+                          label="Exercise"
+                          data={
+                            exerciseTypes?.map((exerciseType) => ({
+                              label: exerciseType.name,
+                              value: exerciseType.id,
+                            })) ?? []
+                          }
+                          type="exercise"
+                        />
+                      )}
+                    </form.AppField>
+                    {/* <form.Field
                       name={`exercises[${i}].exerciseTypeId`}
                       validators={{
                         onChange: string(),
@@ -181,42 +167,6 @@ export default function WorkoutForm({
                             <label htmlFor={exerciseTypeIdField.name}>
                               Exercise
                             </label>
-                            <div className="flex flex-row items-center gap-2">
-                              {i > 0 ? (
-                                <button
-                                  className="-mr-1 text-gray-500 transition-colors hover:text-red-500"
-                                  type="button"
-                                  onClick={() =>
-                                    exercisesArrayField.moveValue(i, i - 1)
-                                  }
-                                >
-                                  <ArrowLeftIcon className="hidden size-4 md:block" />
-                                  <ArrowUpIcon className="size-4 md:hidden" />
-                                </button>
-                              ) : null}
-                              {i <
-                              exercisesArrayField.state.value.length - 1 ? (
-                                <button
-                                  className="-mr-1 text-gray-500 transition-colors hover:text-red-500"
-                                  type="button"
-                                  onClick={() =>
-                                    exercisesArrayField.moveValue(i, i + 1)
-                                  }
-                                >
-                                  <ArrowRightIcon className="hidden size-4 md:block" />
-                                  <ArrowDownIcon className="size-4 md:hidden" />
-                                </button>
-                              ) : null}
-                              <button
-                                className="-mr-1 text-gray-500 transition-colors hover:text-red-500"
-                                type="button"
-                                onClick={() =>
-                                  exercisesArrayField.removeValue(i)
-                                }
-                              >
-                                <XMarkIcon className="size-4" />
-                              </button>
-                            </div>
                           </div>
                           <ExerciseTypeCombobox
                             exerciseTypeIdField={exerciseTypeIdField}
@@ -224,90 +174,37 @@ export default function WorkoutForm({
                           <FieldInfo field={exerciseTypeIdField} />
                         </>
                       )}
-                    </form.Field>
+                    </form.Field> */}
                     <div className="grid grid-cols-2 gap-4">
-                      <form.Field
-                        name={`exercises[${i}].weight`}
-                        validators={{
-                          onBlur: pipe(string(), transform(Number)),
-                        }}
-                      >
-                        {(weightField) => (
-                          <div className="flex flex-col gap-1">
-                            <label htmlFor={weightField.name}>Weight</label>
-                            <input
-                              type="text"
-                              className="border-gray-200 focus:border-black focus:ring-black"
-                              step={0.01}
-                              onInput={(e) =>
-                                weightField.handleChange(e.currentTarget.value)
-                              }
-                              id={weightField.name}
-                              name={weightField.name}
-                              value={weightField.state.value}
-                              onBlur={weightField.handleBlur}
-                            />
-                            <FieldInfo field={weightField} />
-                          </div>
-                        )}
-                      </form.Field>
-                      <form.Field
-                        name={`exercises[${i}].targetReps`}
-                        validators={{
-                          onBlur: pipe(number(), minValue(0)),
-                        }}
-                      >
-                        {(targetRepsField) => (
-                          <div className="flex flex-col gap-1">
-                            <label htmlFor={targetRepsField.name}>
-                              Target Reps
-                            </label>
-                            <input
-                              type="number"
-                              className="border-gray-200 focus:border-black focus:ring-black"
-                              onInput={(e) =>
-                                targetRepsField.handleChange(
-                                  Number(e.currentTarget.value),
-                                )
-                              }
-                              id={targetRepsField.name}
-                              name={targetRepsField.name}
-                              value={targetRepsField.state.value}
-                              onBlur={targetRepsField.handleBlur}
-                            />
-                            <FieldInfo field={targetRepsField} />
-                          </div>
-                        )}
-                      </form.Field>
-                    </div>
-                    <form.Field
-                      name={`exercises[${i}].notes`}
-                      validators={{
-                        onChange: pipe(string(), maxLength(1000)),
-                      }}
-                    >
-                      {(notesField) => (
-                        <div className="flex flex-col gap-1">
-                          <label htmlFor={notesField.name}>Notes</label>
-                          <textarea
-                            className="border-gray-200 focus:border-black focus:ring-black"
-                            onInput={(e) =>
-                              notesField.handleChange(e.currentTarget.value)
-                            }
-                            id={notesField.name}
-                            name={notesField.name}
-                            value={notesField.state.value}
-                            onBlur={notesField.handleBlur}
-                            rows={3}
+                      <form.AppField name={`exercises[${i}].weight`}>
+                        {(field) => (
+                          <field.InputField
+                            label="Weight"
+                            type="number"
+                            step={0.01}
                           />
-                          <FieldInfo field={notesField} />
-                        </div>
+                        )}
+                      </form.AppField>
+                      <form.AppField name={`exercises[${i}].targetReps`}>
+                        {(field) => (
+                          <field.InputField
+                            label="Target Reps"
+                            type="number"
+                            step={1}
+                            min={0}
+                          />
+                        )}
+                      </form.AppField>
+                    </div>
+                    <form.AppField name={`exercises[${i}].notes`}>
+                      {(field) => (
+                        <field.TextareaField label="Notes" rows={3} />
                       )}
-                    </form.Field>
-                    <form.Field name={`exercises[${i}].sets`} mode="array">
+                    </form.AppField>
+                    <form.AppField name={`exercises[${i}].sets`} mode="array">
                       {(setsArrayField) => (
                         <div className="flex flex-col gap-1">
-                          <label htmlFor={setsArrayField.name}>Sets</label>
+                          <Label htmlFor={setsArrayField.name}>Sets</Label>
                           <div className="grid grid-cols-7 gap-2 lg:grid-cols-10">
                             {setsArrayField.state.value.length > 0
                               ? setsArrayField.state.value.map((_, j) => (
@@ -315,14 +212,12 @@ export default function WorkoutForm({
                                     // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
                                     key={j}
                                     name={`exercises[${i}].sets[${j}].reps`}
-                                    validators={{
-                                      onChange: pipe(number(), minValue(0)),
-                                    }}
                                   >
                                     {(setField) => (
-                                      <button
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
                                         type="button"
-                                        className="size-10 border bg-white text-center transition-colors hover:bg-gray-50"
                                         id={setField.name}
                                         name={setField.name}
                                         onClick={() =>
@@ -341,103 +236,102 @@ export default function WorkoutForm({
                                         }}
                                       >
                                         {setField.state.value}
-                                      </button>
+                                      </Button>
                                     )}
                                   </form.Field>
                                 ))
                               : null}
-                            <form.Field name={`exercises[${i}].targetReps`}>
+                            <form.AppField name={`exercises[${i}].targetReps`}>
                               {(targetRepsField) => (
-                                <button
+                                <Button
+                                  variant="outline"
+                                  size="icon"
                                   onClick={() =>
                                     setsArrayField.pushValue({
                                       reps: targetRepsField.state.value,
                                     })
                                   }
                                   type="button"
-                                  className="size-10 border bg-white text-center text-xl transition-colors hover:bg-gray-50"
                                 >
                                   +
-                                </button>
+                                </Button>
                               )}
-                            </form.Field>
+                            </form.AppField>
                           </div>
-                          <FieldInfo field={setsArrayField} />
                         </div>
                       )}
-                    </form.Field>
+                    </form.AppField>
+
+                    <div className="flex flex-row items-center gap-px">
+                      {i > 0 ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          type="button"
+                          onClick={() =>
+                            exercisesArrayField.moveValue(i, i - 1)
+                          }
+                        >
+                          <ArrowLeftIcon className="hidden size-4 md:block" />
+                          <ArrowUpIcon className="size-4 md:hidden" />
+                        </Button>
+                      ) : null}
+                      {i < exercisesArrayField.state.value.length - 1 ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          type="button"
+                          onClick={() =>
+                            exercisesArrayField.moveValue(i, i + 1)
+                          }
+                        >
+                          <ArrowRightIcon className="hidden size-4 md:block" />
+                          <ArrowDownIcon className="size-4 md:hidden" />
+                        </Button>
+                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        onClick={() => exercisesArrayField.removeValue(i)}
+                      >
+                        <XIcon />
+                      </Button>
+                    </div>
                   </div>
                 ))
               : null}
 
-            <button
-              onClick={() =>
-                exercisesArrayField.pushValue({
-                  weight: "0",
-                  targetReps: 8,
-                  notes: "",
-                  exerciseTypeId: "",
-                  sets: [],
-                })
+            <div
+              className="bg-background p-4 md:col-span-(--n) md:px-6"
+              style={
+                {
+                  "--n": 4 - (exercisesArrayField.state.value.length % 4),
+                } as React.CSSProperties
               }
-              type="button"
-              className="min-h-16 bg-white px-2 py-1 text-center transition-colors hover:bg-gray-50"
-              style={{
-                gridColumn: `span ${4 - (exercisesArrayField.state.value.length % 4)}`,
-              }}
             >
-              Add Exercise
-            </button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  exercisesArrayField.pushValue({
+                    weight: 0,
+                    targetReps: 8,
+                    notes: "",
+                    exerciseTypeId: "",
+                    sets: [],
+                  })
+                }
+                type="button"
+                style={{
+                  gridColumn: `span ${4 - (exercisesArrayField.state.value.length % 4)}`,
+                }}
+              >
+                Add Exercise
+              </Button>
+            </div>
           </>
         )}
       </form.Field>
     </form>
-  );
-}
-
-function ExerciseTypeCombobox({
-  exerciseTypeIdField,
-}: {
-  exerciseTypeIdField: AnyFieldApi;
-}) {
-  const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
-  const [input, setInput] = useState(
-    exerciseTypes?.find(
-      (exerciseType) => exerciseType.id === exerciseTypeIdField.state.value,
-    )?.name ?? "",
-  );
-
-  return (
-    <Command
-      className="group border border-gray-200 focus-within:border-black focus-within:ring-black"
-      label="Exercise"
-    >
-      <Command.Input
-        className="w-full border-none ring-0 focus:outline-none"
-        value={input}
-        onValueChange={setInput}
-      />
-      <Command.List className="h-0 max-h-48 overflow-auto overscroll-contain transition-[height] duration-200 group-focus-within:h-[var(--cmdk-list-height)] group-focus-within:border-t">
-        <Command.Empty className="px-3 py-2">No results found.</Command.Empty>
-
-        {exerciseTypes?.map((exerciseType) => (
-          <Command.Item
-            key={exerciseType.id}
-            value={exerciseType.id}
-            keywords={[exerciseType.name]}
-            className="cursor-pointer px-3 py-2 data-[selected=true]:bg-gray-100"
-            onSelect={(value) => {
-              exerciseTypeIdField.handleChange(value);
-              setInput(
-                exerciseTypes?.find((exerciseType) => exerciseType.id === value)
-                  ?.name ?? "",
-              );
-            }}
-          >
-            {exerciseType.name}
-          </Command.Item>
-        ))}
-      </Command.List>
-    </Command>
   );
 }

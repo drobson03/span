@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
 import { Route as AuthedImport } from './routes/_authed'
 import { Route as AuthedIndexImport } from './routes/_authed.index'
+import { Route as AuthedWorkoutsImport } from './routes/_authed.workouts'
 import { Route as AuthedAnalyticsImport } from './routes/_authed.analytics'
 import { Route as AuthedWorkoutsIndexImport } from './routes/_authed.workouts.index'
 import { Route as AuthedWorkoutsNewImport } from './routes/_authed.workouts.new'
@@ -39,6 +40,12 @@ const AuthedIndexRoute = AuthedIndexImport.update({
   getParentRoute: () => AuthedRoute,
 } as any)
 
+const AuthedWorkoutsRoute = AuthedWorkoutsImport.update({
+  id: '/workouts',
+  path: '/workouts',
+  getParentRoute: () => AuthedRoute,
+} as any)
+
 const AuthedAnalyticsRoute = AuthedAnalyticsImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -46,15 +53,15 @@ const AuthedAnalyticsRoute = AuthedAnalyticsImport.update({
 } as any)
 
 const AuthedWorkoutsIndexRoute = AuthedWorkoutsIndexImport.update({
-  id: '/workouts/',
-  path: '/workouts/',
-  getParentRoute: () => AuthedRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
 
 const AuthedWorkoutsNewRoute = AuthedWorkoutsNewImport.update({
-  id: '/workouts/new',
-  path: '/workouts/new',
-  getParentRoute: () => AuthedRoute,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
 
 const AuthedCalendarSplatRoute = AuthedCalendarSplatImport.update({
@@ -64,9 +71,9 @@ const AuthedCalendarSplatRoute = AuthedCalendarSplatImport.update({
 } as any)
 
 const AuthedWorkoutsEditIdRoute = AuthedWorkoutsEditIdImport.update({
-  id: '/workouts/edit/$id',
-  path: '/workouts/edit/$id',
-  getParentRoute: () => AuthedRoute,
+  id: '/edit/$id',
+  path: '/edit/$id',
+  getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -94,6 +101,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAnalyticsImport
       parentRoute: typeof AuthedImport
     }
+    '/_authed/workouts': {
+      id: '/_authed/workouts'
+      path: '/workouts'
+      fullPath: '/workouts'
+      preLoaderRoute: typeof AuthedWorkoutsImport
+      parentRoute: typeof AuthedImport
+    }
     '/_authed/': {
       id: '/_authed/'
       path: '/'
@@ -110,46 +124,58 @@ declare module '@tanstack/react-router' {
     }
     '/_authed/workouts/new': {
       id: '/_authed/workouts/new'
-      path: '/workouts/new'
+      path: '/new'
       fullPath: '/workouts/new'
       preLoaderRoute: typeof AuthedWorkoutsNewImport
-      parentRoute: typeof AuthedImport
+      parentRoute: typeof AuthedWorkoutsImport
     }
     '/_authed/workouts/': {
       id: '/_authed/workouts/'
-      path: '/workouts'
-      fullPath: '/workouts'
+      path: '/'
+      fullPath: '/workouts/'
       preLoaderRoute: typeof AuthedWorkoutsIndexImport
-      parentRoute: typeof AuthedImport
+      parentRoute: typeof AuthedWorkoutsImport
     }
     '/_authed/workouts/edit/$id': {
       id: '/_authed/workouts/edit/$id'
-      path: '/workouts/edit/$id'
+      path: '/edit/$id'
       fullPath: '/workouts/edit/$id'
       preLoaderRoute: typeof AuthedWorkoutsEditIdImport
-      parentRoute: typeof AuthedImport
+      parentRoute: typeof AuthedWorkoutsImport
     }
   }
 }
 
 // Create and export the route tree
 
-interface AuthedRouteChildren {
-  AuthedAnalyticsRoute: typeof AuthedAnalyticsRoute
-  AuthedIndexRoute: typeof AuthedIndexRoute
-  AuthedCalendarSplatRoute: typeof AuthedCalendarSplatRoute
+interface AuthedWorkoutsRouteChildren {
   AuthedWorkoutsNewRoute: typeof AuthedWorkoutsNewRoute
   AuthedWorkoutsIndexRoute: typeof AuthedWorkoutsIndexRoute
   AuthedWorkoutsEditIdRoute: typeof AuthedWorkoutsEditIdRoute
 }
 
-const AuthedRouteChildren: AuthedRouteChildren = {
-  AuthedAnalyticsRoute: AuthedAnalyticsRoute,
-  AuthedIndexRoute: AuthedIndexRoute,
-  AuthedCalendarSplatRoute: AuthedCalendarSplatRoute,
+const AuthedWorkoutsRouteChildren: AuthedWorkoutsRouteChildren = {
   AuthedWorkoutsNewRoute: AuthedWorkoutsNewRoute,
   AuthedWorkoutsIndexRoute: AuthedWorkoutsIndexRoute,
   AuthedWorkoutsEditIdRoute: AuthedWorkoutsEditIdRoute,
+}
+
+const AuthedWorkoutsRouteWithChildren = AuthedWorkoutsRoute._addFileChildren(
+  AuthedWorkoutsRouteChildren,
+)
+
+interface AuthedRouteChildren {
+  AuthedAnalyticsRoute: typeof AuthedAnalyticsRoute
+  AuthedWorkoutsRoute: typeof AuthedWorkoutsRouteWithChildren
+  AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedCalendarSplatRoute: typeof AuthedCalendarSplatRoute
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAnalyticsRoute: AuthedAnalyticsRoute,
+  AuthedWorkoutsRoute: AuthedWorkoutsRouteWithChildren,
+  AuthedIndexRoute: AuthedIndexRoute,
+  AuthedCalendarSplatRoute: AuthedCalendarSplatRoute,
 }
 
 const AuthedRouteWithChildren =
@@ -159,10 +185,11 @@ export interface FileRoutesByFullPath {
   '': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/analytics': typeof AuthedAnalyticsRoute
+  '/workouts': typeof AuthedWorkoutsRouteWithChildren
   '/': typeof AuthedIndexRoute
   '/calendar/$': typeof AuthedCalendarSplatRoute
   '/workouts/new': typeof AuthedWorkoutsNewRoute
-  '/workouts': typeof AuthedWorkoutsIndexRoute
+  '/workouts/': typeof AuthedWorkoutsIndexRoute
   '/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
 
@@ -181,6 +208,7 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authed/analytics': typeof AuthedAnalyticsRoute
+  '/_authed/workouts': typeof AuthedWorkoutsRouteWithChildren
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/calendar/$': typeof AuthedCalendarSplatRoute
   '/_authed/workouts/new': typeof AuthedWorkoutsNewRoute
@@ -194,10 +222,11 @@ export interface FileRouteTypes {
     | ''
     | '/login'
     | '/analytics'
+    | '/workouts'
     | '/'
     | '/calendar/$'
     | '/workouts/new'
-    | '/workouts'
+    | '/workouts/'
     | '/workouts/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -213,6 +242,7 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/login'
     | '/_authed/analytics'
+    | '/_authed/workouts'
     | '/_authed/'
     | '/_authed/calendar/$'
     | '/_authed/workouts/new'
@@ -249,11 +279,9 @@ export const routeTree = rootRoute
       "filePath": "_authed.tsx",
       "children": [
         "/_authed/analytics",
+        "/_authed/workouts",
         "/_authed/",
-        "/_authed/calendar/$",
-        "/_authed/workouts/new",
-        "/_authed/workouts/",
-        "/_authed/workouts/edit/$id"
+        "/_authed/calendar/$"
       ]
     },
     "/login": {
@@ -262,6 +290,15 @@ export const routeTree = rootRoute
     "/_authed/analytics": {
       "filePath": "_authed.analytics.tsx",
       "parent": "/_authed"
+    },
+    "/_authed/workouts": {
+      "filePath": "_authed.workouts.tsx",
+      "parent": "/_authed",
+      "children": [
+        "/_authed/workouts/new",
+        "/_authed/workouts/",
+        "/_authed/workouts/edit/$id"
+      ]
     },
     "/_authed/": {
       "filePath": "_authed.index.tsx",
@@ -273,15 +310,15 @@ export const routeTree = rootRoute
     },
     "/_authed/workouts/new": {
       "filePath": "_authed.workouts.new.tsx",
-      "parent": "/_authed"
+      "parent": "/_authed/workouts"
     },
     "/_authed/workouts/": {
       "filePath": "_authed.workouts.index.tsx",
-      "parent": "/_authed"
+      "parent": "/_authed/workouts"
     },
     "/_authed/workouts/edit/$id": {
       "filePath": "_authed.workouts.edit.$id.tsx",
-      "parent": "/_authed"
+      "parent": "/_authed/workouts"
     }
   }
 }

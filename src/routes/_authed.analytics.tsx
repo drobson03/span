@@ -12,19 +12,12 @@ export const Route = createFileRoute("/_authed/analytics")({
     await context.queryClient.ensureQueryData(
       getWorkoutsByDateQueryOptions(since),
     );
+
+    return { crumb: "Analytics" };
   },
   component: Analytics,
 });
 
 function Analytics() {
-  return (
-    <div className="md:flex-[80_1_0]">
-      <header className="hidden flex-row items-center justify-between border-b p-4 md:flex md:px-6">
-        <h1 className="text-4xl font-semibold">Analytics</h1>
-      </header>
-      <div className="p-4 md:px-6">
-        <Heatmap />
-      </div>
-    </div>
-  );
+  return <Heatmap />;
 }

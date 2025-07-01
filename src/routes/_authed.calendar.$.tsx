@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authed/calendar/$")({
       getWorkoutsByDateForMonthQueryOptions(month),
     );
 
-    return { month };
+    return { month, crumb: "Calendar" };
   },
   component: CalendarMonth,
 });
@@ -29,13 +29,13 @@ function CalendarMonth() {
   const nextMonth = addMonths(month, 1);
 
   return (
-    <div className="md:flex-[80_1_0]">
+    <>
+      <Calendar month={month} />
       <CalendarHeader
         month={month}
         prevMonth={prevMonth}
         nextMonth={nextMonth}
       />
-      <Calendar month={month} />
-    </div>
+    </>
   );
 }

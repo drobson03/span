@@ -39,7 +39,7 @@ export default function Calendar({ month }: { month: Date }) {
   );
 
   return (
-    <div className="flex flex-col gap-[0.0625rem] border-b bg-gray-200 md:grid md:grid-cols-7 md:place-items-stretch">
+    <div className="bg-border flex flex-col gap-[0.0625rem] p-px md:grid md:grid-cols-7 md:place-items-stretch">
       {dates.map((weekDays) => (
         <div
           key={format(weekDays[0]!, "yyyy-MM-dd")}
@@ -49,9 +49,11 @@ export default function Calendar({ month }: { month: Date }) {
             <div
               key={format(day, "yyyy-MM-dd")}
               className={cn(
-                "group flex items-center justify-between bg-white p-4 transition-colors hover:cursor-pointer hover:bg-gray-50 md:min-h-32 md:px-6",
-                isSameDay(day, now) && "bg-black text-white hover:bg-black",
-                !isSameMonth(day, month) && "text-gray-500 hover:text-black",
+                "group bg-background hover:bg-muted flex items-center justify-between p-4 transition-colors hover:cursor-pointer md:min-h-32 md:px-6",
+                isSameDay(day, now) &&
+                  "bg-accent text-accent-foreground hover:bg-accent",
+                !isSameMonth(day, month) &&
+                  "text-muted-foreground hover:text-foreground",
               )}
             >
               <h2 className="text-lg font-medium">{format(day, "dd MMM")}</h2>
@@ -60,8 +62,8 @@ export default function Calendar({ month }: { month: Date }) {
                   className={cn(
                     "text-3xl transition-colors",
                     isSameMonth(day, month)
-                      ? "text-green-500"
-                      : "text-green-400 group-hover:text-green-500",
+                      ? "text-accent-foreground"
+                      : "text-accent-foreground group-hover:text-accent",
                   )}
                 >
                   ✓

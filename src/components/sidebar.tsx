@@ -1,10 +1,12 @@
-import ArrowTrendingUpIcon from "@heroicons/react/24/outline/ArrowTrendingUpIcon";
-import CalendarDaysIcon from "@heroicons/react/24/outline/CalendarDaysIcon";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import DumbbellIcon from "~/components/icons/dumbbell";
-import GaugeIcon from "~/components/icons/gauge";
-import MoveUpRightIcon from "~/components/icons/span";
+import {
+  CalendarDaysIcon,
+  DumbbellIcon,
+  GaugeIcon,
+  MoveUpRightIcon,
+  TrendingUpIcon,
+} from "lucide-react";
 import { getUserQueryOptions } from "~/lib/server/auth/functions";
 
 const SIDEBAR_LINK_CLASSNAME =
@@ -72,7 +74,7 @@ export default function Sidebar() {
               activeProps={SIDEBAR_LINK_ACTIVE_PROPS}
               inactiveProps={SIDEBAR_LINK_INACTIVE_PROPS}
             >
-              <ArrowTrendingUpIcon className="size-6" />
+              <TrendingUpIcon className="size-6" />
               Analytics
             </Link>
           </li>
