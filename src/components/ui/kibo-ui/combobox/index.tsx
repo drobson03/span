@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useControllableState } from 'radix-ui';
-import { ChevronsUpDownIcon } from 'lucide-react';
+import { useControllableState } from "@radix-ui/react-use-controllable-state";
+import { ChevronsUpDownIcon } from "lucide-react";
 import {
   type ComponentProps,
   createContext,
@@ -9,8 +9,8 @@ import {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { Button } from '~/components/ui/button';
+} from "react";
+import { Button } from "~/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -19,13 +19,13 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '~/components/ui/command';
+} from "~/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '~/components/ui/popover';
-import { cn } from '~/lib/utils';
+} from "~/components/ui/popover";
+import { cn } from "~/lib/utils";
 
 type ComboboxData = {
   label: string;
@@ -45,8 +45,8 @@ type ComboboxContextType = {
 
 const ComboboxContext = createContext<ComboboxContextType>({
   data: [],
-  type: 'item',
-  value: '',
+  type: "item",
+  value: "",
   onValueChange: () => {},
   open: false,
   onOpenChange: () => {},
@@ -76,7 +76,7 @@ export const Combobox = ({
   ...props
 }: ComboboxProps) => {
   const [value, onValueChange] = useControllableState({
-    defaultProp: defaultValue ?? '',
+    defaultProp: defaultValue ?? "",
     prop: controlledValue,
     onChange: controlledOnValueChange,
   });
@@ -144,7 +144,7 @@ export const ComboboxTrigger = ({
               ? data.find((item) => item.value === value)?.label
               : `Select ${type}...`}
             <ChevronsUpDownIcon
-              className="shrink-0 text-muted-foreground"
+              className="text-muted-foreground shrink-0"
               size={16}
             />
           </span>
@@ -167,7 +167,7 @@ export const ComboboxContent = ({
 
   return (
     <PopoverContent
-      className={cn('p-0', className)}
+      className={cn("p-0", className)}
       style={{ width }}
       {...popoverOptions}
     >

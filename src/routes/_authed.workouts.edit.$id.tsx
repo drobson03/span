@@ -18,10 +18,11 @@ export const Route = createFileRoute("/_authed/workouts/edit/$id")({
       crumb: "Edit",
     };
   },
-  component: EditWorkout,
+  component: RouteComponent,
 });
 
-function EditWorkout() {
+// NOTE: something very wrong with types here
+function RouteComponent(): React.ReactNode {
   const { id } = Route.useParams();
 
   const { data: workout } = useQuery(getWorkoutQueryOptions(id));
