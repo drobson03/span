@@ -159,6 +159,7 @@ const WorkoutFormCreateWorkoutDataSchema = object({
   action: literal("create"),
   datetime: string(),
   notes: pipe(string(), maxLength(1000)),
+  tags: array(string()),
   exercises: array(WorkoutFormExerciseSchema),
 });
 
@@ -202,6 +203,7 @@ export const createWorkout = createServerFn({ method: "POST" })
         userId: user.id,
         date: new Date(workout.datetime),
         notes: workout.notes.length > 0 ? workout.notes : null,
+        tags: workout.tags.length > 0 ? workout.tags : null,
       })
       .returning({ workoutId: workoutTable.id });
 
@@ -262,6 +264,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
       .update(workoutTable)
       .set({
         notes: workout.notes || null,
+        tags: workout.tags.length > 0 ? workout.tags : null,
         date: new Date(workout.datetime),
         updatedAt: new Date(),
       })

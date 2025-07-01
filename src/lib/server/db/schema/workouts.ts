@@ -26,6 +26,7 @@ export const workout = pgTable(
       }),
     notes: text("notes"),
     date: timestamp("date").notNull(),
+    tags: text("tags").array(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()

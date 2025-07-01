@@ -7,6 +7,7 @@ import {
   ArrowUpIcon,
   XIcon,
 } from "lucide-react";
+import { useState } from "react";
 import * as v from "valibot";
 import { useAppForm } from "~/hooks/form";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
@@ -19,10 +20,23 @@ import {
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/kibo-ui/spinner";
 import { Label } from "../ui/label";
+import {
+  Tags,
+  TagsTrigger,
+  TagsValue,
+  TagsContent,
+  TagsInput,
+  TagsList,
+  TagsEmpty,
+  TagsGroup,
+  TagsItem,
+} from "../ui/kibo-ui/tags";
+import { CheckIcon, PlusIcon } from "lucide-react";
 
 const formSchema = v.object({
   datetime: v.date(),
   notes: v.pipe(v.string(), v.maxLength(1000)),
+  tags: v.array(v.string()),
   exercises: v.array(
     v.object({
       exerciseTypeId: v.string(),
@@ -38,6 +52,19 @@ const formSchema = v.object({
 
 type FormData = v.InferOutput<typeof formSchema>;
 
+const defaultTags = [
+  { id: "push", label: "Push" },
+  { id: "pull", label: "Pull" },
+  { id: "legs", label: "Legs" },
+  { id: "core", label: "Core" },
+  { id: "upper", label: "Upper" },
+  { id: "lower", label: "Lower" },
+  { id: "full-body", label: "Full Body" },
+  { id: "strength", label: "Strength" },
+  { id: "endurance", label: "Endurance" },
+  { id: "hypertrophy", label: "Hypertrophy" },
+];
+
 export default function WorkoutForm({
   workout,
 }: {
@@ -45,6 +72,9 @@ export default function WorkoutForm({
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [newTag, setNewTag] = useState<string>("");
+  const [availableTags, setAvailableTags] =
+    useState<{ id: string; label: string }[]>(defaultTags);
 
   const upsertWorkoutMutation = useMutation({
     mutationFn: async (data: WorkoutFormData) =>
@@ -63,6 +93,7 @@ export default function WorkoutForm({
     defaultValues: {
       datetime: workout?.date ?? new Date(),
       notes: workout?.notes ?? "",
+      tags: workout?.tags ?? [],
       exercises:
         workout?.exercises.map((exercise) => ({
           weight: exercise.weight,
@@ -110,6 +141,102 @@ export default function WorkoutForm({
         </form.AppField>
         <form.AppField name="notes">
           {(field) => <field.TextareaField label="Notes" rows={4} />}
+        </form.AppField>
+        <form.AppField name="tags">
+          {(field) => {
+            const handleRemove = (value: string) => {
+              if (!field.state.value.includes(value)) {
+                return;
+              }
+              field.handleChange(field.state.value.filter((v) => v !== value));
+            };
+
+            const handleSelect = (value: string) => {
+              if (field.state.value.includes(value)) {
+                handleRemove(value);
+                return;
+              }
+              field.handleChange([...field.state.value, value]);
+            };
+
+            const handleCreateTag = () => {
+              if (!newTag.trim()) return;
+
+              const tagId = newTag.toLowerCase().replace(/\s+/g, "-");
+              setAvailableTags((prev: { id: string; label: string }[]) => [
+                ...prev,
+                { id: tagId, label: newTag },
+              ]);
+              field.handleChange([...field.state.value, tagId]);
+              setNewTag("");
+            };
+
+            const filteredTags = availableTags.filter((tag) =>
+              tag.label.toLowerCase().includes(newTag.toLowerCase()),
+            );
+
+            return (
+              <div className="col-span-3 space-y-2">
+                <Label htmlFor={field.name}>Tags</Label>
+                <Tags className="w-full">
+                  <TagsTrigger>
+                    {field.state.value.map((tagId) => {
+                      const tag = availableTags.find((t) => t.id === tagId);
+                      return (
+                        <TagsValue
+                          key={tagId}
+                          onRemove={() => handleRemove(tagId)}
+                        >
+                          {tag?.label || tagId}
+                        </TagsValue>
+                      );
+                    })}
+                  </TagsTrigger>
+                  <TagsContent>
+                    <TagsInput
+                      onValueChange={setNewTag}
+                      placeholder="Search or create tag..."
+                      value={newTag}
+                    />
+                    <TagsList>
+                      <TagsEmpty>
+                        {newTag && (
+                          <button
+                            className="mx-auto flex cursor-pointer items-center gap-2"
+                            onClick={handleCreateTag}
+                            type="button"
+                          >
+                            <PlusIcon
+                              className="text-muted-foreground"
+                              size={14}
+                            />
+                            Create new tag: {newTag}
+                          </button>
+                        )}
+                      </TagsEmpty>
+                      <TagsGroup>
+                        {filteredTags.map((tag) => (
+                          <TagsItem
+                            key={tag.id}
+                            onSelect={handleSelect}
+                            value={tag.id}
+                          >
+                            {tag.label}
+                            {field.state.value.includes(tag.id) && (
+                              <CheckIcon
+                                className="text-muted-foreground"
+                                size={14}
+                              />
+                            )}
+                          </TagsItem>
+                        ))}
+                      </TagsGroup>
+                    </TagsList>
+                  </TagsContent>
+                </Tags>
+              </div>
+            );
+          }}
         </form.AppField>
         <form.Subscribe
           selector={(state) => ({

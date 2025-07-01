@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import WorkoutMenu from "~/components/workouts/menu";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
 import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 const kgFormatter = Intl.NumberFormat(undefined, {
   minimumFractionDigits: 1,
@@ -20,7 +21,18 @@ export default function WorkoutEntry({
         </h2>
         <WorkoutMenu workout={workout} />
       </div>
-      <p className="text-muted-foreground">{workout.notes}</p>
+      {workout.notes && (
+        <p className="text-muted-foreground">{workout.notes}</p>
+      )}
+      {workout.tags && workout.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {workout.tags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="text-xs capitalize">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      )}
       <ul className="mt-2 space-y-2">
         {workout.exercises.map((exercise) => (
           <li key={exercise.id}>
