@@ -21,9 +21,8 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "jsx": "react-jsx",
 
-    "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["./src/*"]
     }
   }
 }
