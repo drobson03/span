@@ -8,8 +8,6 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createServerRootRoute } from '@tanstack/react-start/server'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
@@ -17,12 +15,10 @@ import { Route as AuthedIndexRouteImport } from './routes/_authed.index'
 import { Route as AuthedWorkoutsRouteImport } from './routes/_authed.workouts'
 import { Route as AuthedAnalyticsRouteImport } from './routes/_authed.analytics'
 import { Route as AuthedWorkoutsIndexRouteImport } from './routes/_authed.workouts.index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as AuthedWorkoutsNewRouteImport } from './routes/_authed.workouts.new'
 import { Route as AuthedCalendarSplatRouteImport } from './routes/_authed.calendar.$'
 import { Route as AuthedWorkoutsEditIdRouteImport } from './routes/_authed.workouts.edit.$id'
-import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api.auth.$'
-
-const rootServerRouteImport = createServerRootRoute()
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -53,6 +49,11 @@ const AuthedWorkoutsIndexRoute = AuthedWorkoutsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthedWorkoutsNewRoute = AuthedWorkoutsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -68,19 +69,15 @@ const AuthedWorkoutsEditIdRoute = AuthedWorkoutsEditIdRouteImport.update({
   path: '/edit/$id',
   getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
-const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
   '/analytics': typeof AuthedAnalyticsRoute
   '/workouts': typeof AuthedWorkoutsRouteWithChildren
-  '/': typeof AuthedIndexRoute
   '/calendar/$': typeof AuthedCalendarSplatRoute
   '/workouts/new': typeof AuthedWorkoutsNewRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/workouts/': typeof AuthedWorkoutsIndexRoute
   '/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
@@ -90,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthedIndexRoute
   '/calendar/$': typeof AuthedCalendarSplatRoute
   '/workouts/new': typeof AuthedWorkoutsNewRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/workouts': typeof AuthedWorkoutsIndexRoute
   '/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
@@ -102,18 +100,20 @@ export interface FileRoutesById {
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/calendar/$': typeof AuthedCalendarSplatRoute
   '/_authed/workouts/new': typeof AuthedWorkoutsNewRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/workouts/': typeof AuthedWorkoutsIndexRoute
   '/_authed/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/login'
     | '/analytics'
     | '/workouts'
-    | '/'
     | '/calendar/$'
     | '/workouts/new'
+    | '/api/auth/$'
     | '/workouts/'
     | '/workouts/edit/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -123,6 +123,7 @@ export interface FileRouteTypes {
     | '/'
     | '/calendar/$'
     | '/workouts/new'
+    | '/api/auth/$'
     | '/workouts'
     | '/workouts/edit/$id'
   id:
@@ -134,6 +135,7 @@ export interface FileRouteTypes {
     | '/_authed/'
     | '/_authed/calendar/$'
     | '/_authed/workouts/new'
+    | '/api/auth/$'
     | '/_authed/workouts/'
     | '/_authed/workouts/edit/$id'
   fileRoutesById: FileRoutesById
@@ -141,27 +143,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthedRoute: typeof AuthedRouteWithChildren
   LoginRoute: typeof LoginRoute
-}
-export interface FileServerRoutesByFullPath {
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-}
-export interface FileServerRoutesByTo {
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-}
-export interface FileServerRoutesById {
-  __root__: typeof rootServerRouteImport
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-}
-export interface FileServerRouteTypes {
-  fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/auth/$'
-  fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/auth/$'
-  id: '__root__' | '/api/auth/$'
-  fileServerRoutesById: FileServerRoutesById
-}
-export interface RootServerRouteChildren {
-  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -176,7 +158,7 @@ declare module '@tanstack/react-router' {
     '/_authed': {
       id: '/_authed'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthedRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -208,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedWorkoutsIndexRouteImport
       parentRoute: typeof AuthedWorkoutsRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authed/workouts/new': {
       id: '/_authed/workouts/new'
       path: '/new'
@@ -228,17 +217,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/workouts/edit/$id'
       preLoaderRoute: typeof AuthedWorkoutsEditIdRouteImport
       parentRoute: typeof AuthedWorkoutsRoute
-    }
-  }
-}
-declare module '@tanstack/react-start/server' {
-  interface ServerFileRoutesByPath {
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatServerRouteImport
-      parentRoute: typeof rootServerRouteImport
     }
   }
 }
@@ -279,13 +257,17 @@ const AuthedRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthedRoute: AuthedRouteWithChildren,
   LoginRoute: LoginRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-const rootServerRouteChildren: RootServerRouteChildren = {
-  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
 }
-export const serverRouteTree = rootServerRouteImport
-  ._addFileChildren(rootServerRouteChildren)
-  ._addFileTypes<FileServerRouteTypes>()

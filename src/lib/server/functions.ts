@@ -38,7 +38,7 @@ function reduceWorkoutsByDate(workouts: Workout[]) {
 }
 
 export const getWorkoutsByDate = createServerFn({ method: "GET" })
-  .validator(object({ since: date() }))
+  .inputValidator(object({ since: date() }))
   .handler(async (ctx) => {
     const startDate = set(ctx.data.since, {
       hours: 0,
@@ -73,7 +73,7 @@ export const getWorkoutsByDateQueryOptions = (since: Date) =>
 export const getWorkoutsByDateForMonth = createServerFn({
   method: "GET",
 })
-  .validator(object({ month: date() }))
+  .inputValidator(object({ month: date() }))
   .handler(async (ctx) => {
     const monthDate = set(ctx.data.month, { date: 1 });
     const { user } = await getUser();
@@ -183,7 +183,7 @@ const WorkoutFormDataSchema = variant("action", [
 export type WorkoutFormData = InferInput<typeof WorkoutFormDataSchema>;
 
 export const createWorkout = createServerFn({ method: "POST" })
-  .validator(WorkoutFormDataSchema)
+  .inputValidator(WorkoutFormDataSchema)
   .handler(async (ctx) => {
     const workout = ctx.data;
 
@@ -237,7 +237,7 @@ export const createWorkout = createServerFn({ method: "POST" })
   });
 
 export const updateWorkout = createServerFn({ method: "POST" })
-  .validator(WorkoutFormEditWorkoutDataSchema)
+  .inputValidator(WorkoutFormEditWorkoutDataSchema)
   .handler(async (ctx) => {
     const workout = ctx.data;
 
@@ -290,7 +290,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
   });
 
 export const deleteWorkout = createServerFn({ method: "POST" })
-  .validator(object({ id: string() }))
+  .inputValidator(object({ id: string() }))
   .handler(async (ctx) => {
     const { user } = await getUser();
 
@@ -306,7 +306,7 @@ export const deleteWorkout = createServerFn({ method: "POST" })
   });
 
 export const getWorkout = createServerFn({ method: "GET" })
-  .validator(object({ id: string() }))
+  .inputValidator(object({ id: string() }))
   .handler(async (ctx) => {
     const { user } = await getUser();
 
@@ -337,7 +337,7 @@ export const getWorkoutQueryOptions = (id: string) =>
   });
 
 export const getWorkoutsWithTagFilter = createServerFn({ method: "GET" })
-  .validator(object({ tags: optional(array(string())) }))
+  .inputValidator(object({ tags: optional(array(string())) }))
   .handler(async (ctx) => {
     const { user } = await getUser();
 
