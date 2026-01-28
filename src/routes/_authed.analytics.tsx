@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { add, endOfWeek } from "date-fns";
+import ExerciseCharts from "~/components/exercise-charts";
 import Heatmap from "~/components/heatmap";
-import { getWorkoutsByDateQueryOptions } from "~/lib/server/functions";
+import {
+  getExerciseProgressionQueryOptions,
+  getWorkoutsByDateQueryOptions,
+} from "~/lib/server/functions";
 
 export const Route = createFileRoute("/_authed/analytics")({
   loader: async ({ context }) => {
@@ -9,9 +13,10 @@ export const Route = createFileRoute("/_authed/analytics")({
       days: 1,
       weeks: -53,
     });
-    await context.queryClient.ensureQueryData(
-      getWorkoutsByDateQueryOptions(since),
-    );
+    await Promise.all([
+      context.queryClient.ensureQueryData(getWorkoutsByDateQueryOptions(since)),
+      context.queryClient.ensureQueryData(getExerciseProgressionQueryOptions()),
+    ]);
 
     return { crumb: "Analytics" };
   },
@@ -19,5 +24,10 @@ export const Route = createFileRoute("/_authed/analytics")({
 });
 
 function Analytics() {
-  return <Heatmap />;
+  return (
+    <div className="flex flex-col gap-6">
+      <Heatmap />
+      <ExerciseCharts />
+    </div>
+  );
 }

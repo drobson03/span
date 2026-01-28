@@ -374,3 +374,86 @@ export const getWorkoutsWithTagFilterQueryOptions = (tags?: string[]) =>
     queryKey: ["workouts", "filtered", tags],
     queryFn: () => getWorkoutsWithTagFilter({ data: { tags } }),
   });
+
+export type ExerciseProgressionData = {
+  date: string;
+  maxWeight: number;
+  totalVolume: number;
+  totalReps: number;
+  sets: number;
+};
+
+export type ExerciseTypeProgression = {
+  exerciseTypeId: string;
+  exerciseTypeName: string;
+  data: ExerciseProgressionData[];
+};
+
+export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { user } = await getUser();
+
+    if (!user) {
+      return [];
+    }
+
+    const workouts = await db.query.workout.findMany({
+      orderBy: (workouts, { asc }) => [asc(workouts.date)],
+      where: (workouts, { eq }) => eq(workouts.userId, user.id),
+      with: {
+        exercises: {
+          with: {
+            exerciseType: true,
+          },
+        },
+      },
+    });
+
+    const exerciseTypeMap = new Map<string, ExerciseTypeProgression>();
+
+    for (const workout of workouts) {
+      const dateStr = format(workout.date, "yyyy-MM-dd");
+
+      for (const ex of workout.exercises) {
+        if (!exerciseTypeMap.has(ex.exerciseTypeId)) {
+          exerciseTypeMap.set(ex.exerciseTypeId, {
+            exerciseTypeId: ex.exerciseTypeId,
+            exerciseTypeName: ex.exerciseType.name,
+            data: [],
+          });
+        }
+
+        const totalReps = ex.sets.reduce((sum, s) => sum + s.reps, 0);
+        const totalVolume = totalReps * ex.weight;
+
+        const progression = exerciseTypeMap.get(ex.exerciseTypeId)!;
+        const existingEntry = progression.data.find((d) => d.date === dateStr);
+
+        if (existingEntry) {
+          existingEntry.maxWeight = Math.max(existingEntry.maxWeight, ex.weight);
+          existingEntry.totalVolume += totalVolume;
+          existingEntry.totalReps += totalReps;
+          existingEntry.sets += ex.sets.length;
+        } else {
+          progression.data.push({
+            date: dateStr,
+            maxWeight: ex.weight,
+            totalVolume,
+            totalReps,
+            sets: ex.sets.length,
+          });
+        }
+      }
+    }
+
+    return Array.from(exerciseTypeMap.values()).sort((a, b) =>
+      a.exerciseTypeName.localeCompare(b.exerciseTypeName),
+    );
+  },
+);
+
+export const getExerciseProgressionQueryOptions = () =>
+  queryOptions({
+    queryKey: ["exercise-progression"],
+    queryFn: async () => await getExerciseProgression(),
+  });
