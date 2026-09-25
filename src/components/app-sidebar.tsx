@@ -72,13 +72,13 @@ export default function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  tooltip="New Workout"
+                  tooltip="Start / resume workout"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
                   asChild
                 >
-                  <Link to="/workouts/new">
+                  <Link to="/workouts/active">
                     <PlusIcon />
-                    <span>New Workout</span>
+                    <span>Start / resume workout</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

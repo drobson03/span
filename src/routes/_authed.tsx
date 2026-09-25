@@ -1,4 +1,9 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import {
+  Outlet,
+  createFileRoute,
+  redirect,
+  useRouterState,
+} from "@tanstack/react-router";
 import AppSidebar from "~/components/app-sidebar";
 import { Breadcrumbs } from "~/components/breadcrumbs";
 import { Separator } from "~/components/ui/separator";
@@ -18,7 +23,15 @@ export const Route = createFileRoute("/_authed")({
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(getUserQueryOptions);
   },
-  component: () => (
+  component: AuthenticatedLayout,
+});
+
+function AuthenticatedLayout() {
+  const active = useRouterState({
+    select: (state) => state.location.pathname === "/workouts/active",
+  });
+  if (active) return <Outlet />;
+  return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="border md:peer-data-[variant=inset]:shadow-none">
@@ -35,5 +48,5 @@ export const Route = createFileRoute("/_authed")({
         </main>
       </SidebarInset>
     </SidebarProvider>
-  ),
-});
+  );
+}

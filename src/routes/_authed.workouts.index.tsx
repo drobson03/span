@@ -62,9 +62,14 @@ function Workouts() {
       <div className="bg-background flex flex-col gap-4 p-4 md:col-span-5 md:px-6">
         <div className="flex flex-row items-center justify-between">
           <h1 className="text-xl font-semibold">Workouts</h1>
-          <Button asChild>
-            <Link to="/workouts/new">New</Link>
-          </Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button asChild variant="outline">
+              <Link to="/workouts/new">Log workout</Link>
+            </Button>
+            <Button asChild>
+              <Link to="/workouts/active">Start / resume</Link>
+            </Button>
+          </div>
         </div>
         <WorkoutFilter
           availableTags={availableTags}

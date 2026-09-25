@@ -17,6 +17,7 @@ import { Route as AuthedAnalyticsRouteImport } from './routes/_authed.analytics'
 import { Route as AuthedWorkoutsIndexRouteImport } from './routes/_authed.workouts.index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as AuthedWorkoutsNewRouteImport } from './routes/_authed.workouts.new'
+import { Route as AuthedWorkoutsActiveRouteImport } from './routes/_authed.workouts.active'
 import { Route as AuthedCalendarSplatRouteImport } from './routes/_authed.calendar.$'
 import { Route as AuthedWorkoutsEditIdRouteImport } from './routes/_authed.workouts.edit.$id'
 
@@ -59,6 +60,11 @@ const AuthedWorkoutsNewRoute = AuthedWorkoutsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
+const AuthedWorkoutsActiveRoute = AuthedWorkoutsActiveRouteImport.update({
+  id: '/active',
+  path: '/active',
+  getParentRoute: () => AuthedWorkoutsRoute,
+} as any)
 const AuthedCalendarSplatRoute = AuthedCalendarSplatRouteImport.update({
   id: '/calendar/$',
   path: '/calendar/$',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthedAnalyticsRoute
   '/workouts': typeof AuthedWorkoutsRouteWithChildren
   '/calendar/$': typeof AuthedCalendarSplatRoute
+  '/workouts/active': typeof AuthedWorkoutsActiveRoute
   '/workouts/new': typeof AuthedWorkoutsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/workouts/': typeof AuthedWorkoutsIndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthedAnalyticsRoute
   '/': typeof AuthedIndexRoute
   '/calendar/$': typeof AuthedCalendarSplatRoute
+  '/workouts/active': typeof AuthedWorkoutsActiveRoute
   '/workouts/new': typeof AuthedWorkoutsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/workouts': typeof AuthedWorkoutsIndexRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/_authed/workouts': typeof AuthedWorkoutsRouteWithChildren
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/calendar/$': typeof AuthedCalendarSplatRoute
+  '/_authed/workouts/active': typeof AuthedWorkoutsActiveRoute
   '/_authed/workouts/new': typeof AuthedWorkoutsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/workouts/': typeof AuthedWorkoutsIndexRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/workouts'
     | '/calendar/$'
+    | '/workouts/active'
     | '/workouts/new'
     | '/api/auth/$'
     | '/workouts/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/'
     | '/calendar/$'
+    | '/workouts/active'
     | '/workouts/new'
     | '/api/auth/$'
     | '/workouts'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/_authed/workouts'
     | '/_authed/'
     | '/_authed/calendar/$'
+    | '/_authed/workouts/active'
     | '/_authed/workouts/new'
     | '/api/auth/$'
     | '/_authed/workouts/'
@@ -204,6 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedWorkoutsNewRouteImport
       parentRoute: typeof AuthedWorkoutsRoute
     }
+    '/_authed/workouts/active': {
+      id: '/_authed/workouts/active'
+      path: '/active'
+      fullPath: '/workouts/active'
+      preLoaderRoute: typeof AuthedWorkoutsActiveRouteImport
+      parentRoute: typeof AuthedWorkoutsRoute
+    }
     '/_authed/calendar/$': {
       id: '/_authed/calendar/$'
       path: '/calendar/$'
@@ -222,12 +241,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthedWorkoutsRouteChildren {
+  AuthedWorkoutsActiveRoute: typeof AuthedWorkoutsActiveRoute
   AuthedWorkoutsNewRoute: typeof AuthedWorkoutsNewRoute
   AuthedWorkoutsIndexRoute: typeof AuthedWorkoutsIndexRoute
   AuthedWorkoutsEditIdRoute: typeof AuthedWorkoutsEditIdRoute
 }
 
 const AuthedWorkoutsRouteChildren: AuthedWorkoutsRouteChildren = {
+  AuthedWorkoutsActiveRoute: AuthedWorkoutsActiveRoute,
   AuthedWorkoutsNewRoute: AuthedWorkoutsNewRoute,
   AuthedWorkoutsIndexRoute: AuthedWorkoutsIndexRoute,
   AuthedWorkoutsEditIdRoute: AuthedWorkoutsEditIdRoute,

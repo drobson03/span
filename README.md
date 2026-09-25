@@ -83,3 +83,21 @@ src/
 │   └── server/    # Server-side code (auth, db, API functions)
 └── routes/        # TanStack Router file-based routes
 ```
+
+## Active workout mode
+
+Choose **Start / resume workout** in the sidebar or **Start / resume** on the
+workouts page. Add exercises, adjust reps with the minus/plus controls, and mark
+sets complete. Each completed set starts the rest timer; its duration can be
+changed, extended by 30 seconds, or skipped.
+
+Changes save automatically in this browser, separately for each account. Return
+to the same screen to resume after leaving or refreshing. Drafts do not sync
+between devices. Finishing saves only completed sets to workout history and clears
+the draft after a successful save; unfinished sets are excluded after confirmation.
+
+Run draft recovery, timer, and completed-set regression tests with Node.js 22.6+:
+
+```bash
+node --experimental-strip-types --test tests/active-workout.test.mjs
+```
