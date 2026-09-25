@@ -1,11 +1,14 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin } from "better-auth/plugins";
+import { admin, oAuthProxy } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { db } from "~/lib/server/db";
 import { env } from "~/lib/server/env";
 
 export const auth = betterAuth({
+  baseURL: env.BETTER_AUTH_URL,
+  secret: env.BETTER_AUTH_SECRET,
+  trustedOrigins: env.BETTER_AUTH_TRUSTED_ORIGINS,
   emailAndPassword: {
     enabled: false,
   },
@@ -18,5 +21,12 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-  plugins: [admin(), tanstackStartCookies()],
+  plugins: [
+    admin(),
+    oAuthProxy({
+      productionURL: env.OAUTH_PROXY_PRODUCTION_URL,
+      secret: env.OAUTH_PROXY_SECRET,
+    }),
+    tanstackStartCookies(),
+  ],
 });

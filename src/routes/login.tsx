@@ -25,7 +25,10 @@ function Login() {
             type="button"
             className="w-full"
             onClick={async () => {
-              await authClient.signIn.social({ provider: "google" });
+              await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+              });
             }}
           >
             Login with Google
