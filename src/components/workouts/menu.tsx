@@ -1,6 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { EditIcon, MoreVerticalIcon, TrashIcon } from "lucide-react";
+import {
+  EditIcon,
+  MoreVerticalIcon,
+  RepeatIcon,
+  TrashIcon,
+} from "lucide-react";
 import type { Workout } from "~/lib/server/db/schema";
 import { deleteWorkout } from "~/lib/server/functions";
 import { Button } from "../ui/button";
@@ -29,6 +34,12 @@ export default function WorkoutMenu({ workout }: { workout: Workout }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/workouts/new" search={{ repeat: workout.id }}>
+            <RepeatIcon className="size-4" />
+            Repeat
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/workouts/edit/$id" params={{ id: workout.id }}>
             <EditIcon className="size-4" />

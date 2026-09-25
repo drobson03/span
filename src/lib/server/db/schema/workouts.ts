@@ -1,3 +1,4 @@
+import type { WorkoutTemplate } from "~/lib/workout-template";
 import { relations } from "drizzle-orm";
 import {
   index,
@@ -78,6 +79,7 @@ export const exercise = pgTable(
     id: varchar("id", { length: 21 })
       .primaryKey()
       .$defaultFn(() => nanoid()),
+    position: integer("position").notNull().default(0),
     targetReps: integer("target_reps").notNull(),
     weight: real("weight").notNull(),
     notes: text("notes"),
@@ -123,3 +125,20 @@ export type ExerciseWithRelations = Exercise & {
 export type WorkoutWithRelations = Workout & {
   exercises: ExerciseWithRelations[];
 };
+
+// Routines are independent snapshots, so deleting a workout does not remove them.
+export const routine = pgTable(
+  "routine",
+  {
+    id: varchar("id", { length: 21 })
+      .primaryKey()
+      .$defaultFn(() => nanoid()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    name: varchar("name", { length: 100 }).notNull(),
+    template: jsonb("template").$type<WorkoutTemplate>().notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("routines_user_id_idx").on(table.userId)],
+);

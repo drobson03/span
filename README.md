@@ -63,3 +63,21 @@ src/
 │   └── server/    # Server-side code (auth, db, API functions)
 └── routes/        # TanStack Router file-based routes
 ```
+
+## Repeat workouts and routines
+
+On **New workout**, repeat your most recent session or start a saved routine.
+You can also repeat any session from its workout menu. Copies use the current
+date, retain exercises, weights, rep targets, and set counts, and prefill each
+set with its target reps. Update these to match your results before saving.
+Repeating clears the old session notes and leaves the original workout intact.
+
+Use **Save as routine** in a new or existing workout to save a named snapshot
+(e.g. “Push A”), including tags and notes, without logging another workout.
+Saved routines appear on New workout, where they can also be deleted.
+
+Before deploying this feature, run `pnpm db:push` to create
+`routine` and add `exercise.position`. New and edited sessions preserve exercise
+order; older sessions use a stable ID order until edited and saved.
+
+Template regression tests: `node --experimental-strip-types --test tests/workout-template.test.mjs`

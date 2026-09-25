@@ -10,6 +10,8 @@ import {
 import { useState, useMemo, useCallback, useRef } from "react";
 import * as v from "valibot";
 import { useAppForm } from "~/hooks/form";
+import type { WorkoutTemplate } from "~/lib/workout-template";
+import { SaveRoutine } from "./save-routine";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
 import {
   type WorkoutFormData,
@@ -67,8 +69,10 @@ const defaultTags = [
 
 export default function WorkoutForm({
   workout,
+  template,
 }: {
   workout?: WorkoutWithRelations;
+  template?: WorkoutTemplate;
 }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -125,8 +129,8 @@ export default function WorkoutForm({
   const form = useAppForm({
     defaultValues: {
       datetime: workout?.date ?? new Date(),
-      notes: workout?.notes ?? "",
-      tags: workout?.tags ?? [],
+      notes: workout?.notes ?? template?.notes ?? "",
+      tags: workout?.tags ?? template?.tags ?? [],
       exercises:
         workout?.exercises.map((exercise) => ({
           weight: exercise.weight,
@@ -136,7 +140,9 @@ export default function WorkoutForm({
           sets: exercise.sets.map((set) => ({
             reps: set.reps,
           })),
-        })) ?? [],
+        })) ??
+        template?.exercises ??
+        [],
     } as FormData satisfies FormData,
     validators: {
       onChange: formSchema,
@@ -276,6 +282,12 @@ export default function WorkoutForm({
             );
           }}
         </form.AppField>
+        <SaveRoutine getTemplate={() => form.state.values} />
+        {upsertWorkoutMutation.isError && (
+          <p role="alert" className="text-destructive col-span-3">
+            Could not save workout. Please try again.
+          </p>
+        )}
         <form.Subscribe
           selector={(state) => ({
             canSubmit: state.canSubmit,
@@ -288,7 +300,7 @@ export default function WorkoutForm({
                 variant="outline"
                 className="col-span-3 ml-auto max-w-min"
                 type="submit"
-                disabled={!state.canSubmit}
+                disabled={!state.canSubmit || state.isSubmitting}
               >
                 {state.isSubmitting ? <Spinner className="size-4" /> : "Save"}
               </Button>

@@ -116,6 +116,7 @@ async function getWorkoutsFn() {
     where: (workouts, { eq }) => eq(workouts.userId, user.id),
     with: {
       exercises: {
+        orderBy: (table, { asc }) => [asc(table.position), asc(table.id)],
         with: {
           exerciseType: true,
         },
@@ -220,7 +221,8 @@ export const createWorkout = createServerFn({ method: "POST" })
     const exercises = await db
       .insert(exercise)
       .values(
-        workout.exercises.map((exercise) => ({
+        workout.exercises.map((exercise, position) => ({
+          position,
           workoutId,
           exerciseTypeId: exercise.exerciseTypeId,
           weight: Number.parseFloat(exercise.weight),
@@ -276,7 +278,8 @@ export const updateWorkout = createServerFn({ method: "POST" })
       await db
         .insert(exercise)
         .values(
-          workout.exercises.map((ex) => ({
+          workout.exercises.map((ex, position) => ({
+            position,
             workoutId: workout.id,
             exerciseTypeId: ex.exerciseTypeId,
             weight: Number.parseFloat(ex.weight),
@@ -319,6 +322,7 @@ export const getWorkout = createServerFn({ method: "GET" })
         and(eq(workouts.id, ctx.data.id), eq(workouts.userId, user.id)),
       with: {
         exercises: {
+          orderBy: (table, { asc }) => [asc(table.position), asc(table.id)],
           with: {
             exerciseType: true,
           },
@@ -361,6 +365,7 @@ export const getWorkoutsWithTagFilter = createServerFn({ method: "GET" })
       where: and(...conditions),
       with: {
         exercises: {
+          orderBy: (table, { asc }) => [asc(table.position), asc(table.id)],
           with: {
             exerciseType: true,
           },
@@ -402,6 +407,7 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
       where: (workouts, { eq }) => eq(workouts.userId, user.id),
       with: {
         exercises: {
+          orderBy: (table, { asc }) => [asc(table.position), asc(table.id)],
           with: {
             exerciseType: true,
           },
@@ -430,7 +436,10 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
         const existingEntry = progression.data.find((d) => d.date === dateStr);
 
         if (existingEntry) {
-          existingEntry.maxWeight = Math.max(existingEntry.maxWeight, ex.weight);
+          existingEntry.maxWeight = Math.max(
+            existingEntry.maxWeight,
+            ex.weight,
+          );
           existingEntry.totalVolume += totalVolume;
           existingEntry.totalReps += totalReps;
           existingEntry.sets += ex.sets.length;
