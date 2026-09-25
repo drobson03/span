@@ -9,6 +9,11 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useCallback, useRef } from "react";
 import * as v from "valibot";
+import {
+  getSetWeight,
+  SetWeightSchema,
+  WorkoutSetSchema,
+} from "~/lib/workout-sets";
 import { useAppForm } from "~/hooks/form";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
 import {
@@ -40,12 +45,10 @@ const formSchema = v.object({
   exercises: v.array(
     v.object({
       exerciseTypeId: v.string(),
-      weight: v.number("Please enter a valid number"),
+      weight: SetWeightSchema,
       targetReps: v.number("Please enter a valid number"),
       notes: v.pipe(v.string(), v.maxLength(1000)),
-      sets: v.array(
-        v.object({ reps: v.number("Please enter a valid number") }),
-      ),
+      sets: v.array(WorkoutSetSchema),
     }),
   ),
 });
@@ -116,6 +119,7 @@ export default function WorkoutForm({
         : await updateWorkout({ data }),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      queryClient.invalidateQueries({ queryKey: ["exercise-progression"] });
       await navigate({ to: "/workouts" });
     },
   });
@@ -135,6 +139,7 @@ export default function WorkoutForm({
           exerciseTypeId: exercise.exerciseTypeId,
           sets: exercise.sets.map((set) => ({
             reps: set.reps,
+            weight: getSetWeight(set, exercise.weight),
           })),
         })) ?? [],
     } as FormData satisfies FormData,
@@ -149,10 +154,6 @@ export default function WorkoutForm({
           ? { id: workout.id, action: "edit" }
           : { action: "create" }),
         datetime: value.datetime.toISOString(),
-        exercises: value.exercises.map((exercise) => ({
-          ...exercise,
-          weight: exercise.weight.toString(),
-        })),
       });
     },
   });
@@ -344,8 +345,9 @@ export default function WorkoutForm({
                       <form.AppField name={`exercises[${i}].weight`}>
                         {(field) => (
                           <field.InputField
-                            label="Weight"
+                            label="Default Weight (kg)"
                             type="number"
+                            min={0}
                             step={0.01}
                           />
                         )}
@@ -370,58 +372,78 @@ export default function WorkoutForm({
                       {(setsArrayField) => (
                         <div className="flex flex-col gap-1">
                           <Label htmlFor={setsArrayField.name}>Sets</Label>
-                          <div className="grid grid-cols-7 gap-2 lg:grid-cols-10">
-                            {setsArrayField.state.value.length > 0
-                              ? setsArrayField.state.value.map((_, j) => (
-                                  <form.Field
-                                    // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
-                                    key={j}
+                          <p className="text-muted-foreground text-xs">
+                            Each set has its own weight. New sets copy the
+                            previous set’s weight, or use the default for the
+                            first set.
+                          </p>
+                          <div className="flex flex-col gap-3">
+                            {setsArrayField.state.value.map((_, j) => (
+                              <div
+                                // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
+                                key={j}
+                                className="flex items-start gap-2"
+                              >
+                                <span className="pt-8 text-sm">{j + 1}</span>
+                                <div className="grid min-w-0 flex-1 grid-cols-2 gap-2">
+                                  <form.AppField
+                                    name={`exercises[${i}].sets[${j}].weight`}
+                                  >
+                                    {(field) => (
+                                      <field.InputField
+                                        label="Weight (kg)"
+                                        aria-label={`Set ${j + 1} weight (kg)`}
+                                        type="number"
+                                        min={0}
+                                        step={0.01}
+                                      />
+                                    )}
+                                  </form.AppField>
+                                  <form.AppField
                                     name={`exercises[${i}].sets[${j}].reps`}
                                   >
-                                    {(setField) => (
-                                      <Button
-                                        variant="outline"
-                                        size="icon"
-                                        type="button"
-                                        id={setField.name}
-                                        name={setField.name}
-                                        onClick={() =>
-                                          setField.state.value === 1
-                                            ? setsArrayField.removeValue(j)
-                                            : setField.handleChange(
-                                                setField.state.value - 1,
-                                              )
-                                        }
-                                        onContextMenu={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          setField.handleChange(
-                                            setField.state.value + 1,
-                                          );
-                                        }}
-                                      >
-                                        {setField.state.value}
-                                      </Button>
+                                    {(field) => (
+                                      <field.InputField
+                                        label="Reps"
+                                        aria-label={`Set ${j + 1} reps`}
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                      />
                                     )}
-                                  </form.Field>
-                                ))
-                              : null}
-                            <form.AppField name={`exercises[${i}].targetReps`}>
-                              {(targetRepsField) => (
+                                  </form.AppField>
+                                </div>
                                 <Button
-                                  variant="outline"
+                                  variant="ghost"
                                   size="icon"
-                                  onClick={() =>
-                                    setsArrayField.pushValue({
-                                      reps: targetRepsField.state.value,
-                                    })
-                                  }
                                   type="button"
+                                  className="mt-6 shrink-0"
+                                  aria-label={`Remove set ${j + 1}`}
+                                  onClick={() => setsArrayField.removeValue(j)}
                                 >
-                                  +
+                                  <XIcon className="size-4" />
                                 </Button>
-                              )}
-                            </form.AppField>
+                              </div>
+                            ))}
+                            <Button
+                              variant="outline"
+                              type="button"
+                              onClick={() =>
+                                setsArrayField.pushValue({
+                                  reps: form.getFieldValue(
+                                    `exercises[${i}].targetReps`,
+                                  ),
+                                  weight:
+                                    setsArrayField.state.value.at(-1)?.weight ??
+                                    form.getFieldValue(
+                                      `exercises[${i}].weight`,
+                                    ),
+                                })
+                              }
+                            >
+                              <PlusIcon className="size-4" />
+                              Add Set
+                            </Button>
                           </div>
                         </div>
                       )}

@@ -70,6 +70,8 @@ export const exerciseTypeRelations = relations(exerciseType, ({ many }) => ({
 
 export type WorkoutSet = {
   reps: number;
+  // Older workouts inherit the exercise weight until they are saved again.
+  weight?: number;
 };
 
 export const exercise = pgTable(

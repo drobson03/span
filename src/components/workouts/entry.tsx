@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import WorkoutMenu from "~/components/workouts/menu";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
-import { Button } from "../ui/button";
+import { getSetWeight } from "~/lib/workout-sets";
 import { Badge } from "../ui/badge";
 
 const kgFormatter = Intl.NumberFormat(undefined, {
@@ -39,22 +39,17 @@ export default function WorkoutEntry({
             <h3 className="text-xl font-semibold">
               {exercise.exerciseType.name}
             </h3>
-            <p className="text-muted-foreground">
-              {`${kgFormatter.format(exercise.weight)} kg`}
-            </p>
             <p className="text-muted-foreground">{exercise.notes}</p>
-            <ul className="mt-2 flex flex-row gap-2">
+            <ul className="mt-2 flex flex-wrap gap-2">
               {exercise.sets.map((set, i) => (
-                <Button
-                  // biome-ignore lint/suspicious/noArrayIndexKey: all we got
+                <li
+                  // biome-ignore lint/suspicious/noArrayIndexKey: sets have no IDs
                   key={i}
-                  asChild
-                  variant="outline"
-                  size="icon"
-                  className="hover:bg-background"
+                  className="rounded-md border px-3 py-2 text-sm"
                 >
-                  <li>{set.reps}</li>
-                </Button>
+                  {kgFormatter.format(getSetWeight(set, exercise.weight))} kg ×{" "}
+                  {set.reps} reps
+                </li>
               ))}
             </ul>
           </li>

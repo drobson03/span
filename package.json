@@ -5,6 +5,7 @@
     "db:push": "drizzle-kit push",
     "dev": "vite dev",
     "build": "vite build",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "start": "node .output/server/index.mjs",
     "format": "prettier --write ./src --cache",
     "lint": "biome check --write ."

@@ -16,6 +16,11 @@ import {
   string,
   variant,
 } from "valibot";
+import {
+  getExerciseSetStats,
+  SetWeightSchema,
+  WorkoutSetSchema,
+} from "~/lib/workout-sets";
 import { getUser } from "~/lib/server/auth/functions";
 import { db } from "~/lib/server/db";
 import {
@@ -149,10 +154,10 @@ export const getExerciseTypesQueryOptions = queryOptions({
 
 const WorkoutFormExerciseSchema = object({
   exerciseTypeId: string(),
-  weight: string(),
+  weight: SetWeightSchema,
   targetReps: pipe(number(), minValue(0)),
   notes: pipe(string(), maxLength(1000)),
-  sets: array(object({ reps: pipe(number(), minValue(0)) })),
+  sets: array(WorkoutSetSchema),
 });
 
 const WorkoutFormCreateWorkoutDataSchema = object({
@@ -223,7 +228,7 @@ export const createWorkout = createServerFn({ method: "POST" })
         workout.exercises.map((exercise) => ({
           workoutId,
           exerciseTypeId: exercise.exerciseTypeId,
-          weight: Number.parseFloat(exercise.weight),
+          weight: exercise.weight,
           targetReps: exercise.targetReps,
           notes: exercise.notes.length > 0 ? exercise.notes : null,
           sets: exercise.sets,
@@ -279,7 +284,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
           workout.exercises.map((ex) => ({
             workoutId: workout.id,
             exerciseTypeId: ex.exerciseTypeId,
-            weight: Number.parseFloat(ex.weight),
+            weight: ex.weight,
             targetReps: ex.targetReps,
             notes: ex.notes || null,
             sets: ex.sets,
@@ -423,21 +428,23 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
           });
         }
 
-        const totalReps = ex.sets.reduce((sum, s) => sum + s.reps, 0);
-        const totalVolume = totalReps * ex.weight;
+        const { totalReps, totalVolume, maxWeight } = getExerciseSetStats(ex);
 
         const progression = exerciseTypeMap.get(ex.exerciseTypeId)!;
         const existingEntry = progression.data.find((d) => d.date === dateStr);
 
         if (existingEntry) {
-          existingEntry.maxWeight = Math.max(existingEntry.maxWeight, ex.weight);
+          existingEntry.maxWeight = Math.max(
+            existingEntry.maxWeight,
+            maxWeight,
+          );
           existingEntry.totalVolume += totalVolume;
           existingEntry.totalReps += totalReps;
           existingEntry.sets += ex.sets.length;
         } else {
           progression.data.push({
             date: dateStr,
-            maxWeight: ex.weight,
+            maxWeight,
             totalVolume,
             totalReps,
             sets: ex.sets.length,
