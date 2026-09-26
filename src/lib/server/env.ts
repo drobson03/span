@@ -1,26 +1,7 @@
-import {
-  minLength,
-  object,
-  optional,
-  parse,
-  pipe,
-  string,
-  transform,
-  url,
-} from "valibot";
+import { minLength, object, parse, pipe, string, url } from "valibot";
 
 const EnvSchema = object({
   BETTER_AUTH_SECRET: string(),
-  BETTER_AUTH_URL: pipe(string(), url()),
-  BETTER_AUTH_TRUSTED_ORIGINS: pipe(
-    optional(string(), ""),
-    transform((value) =>
-      value
-        .split(",")
-        .map((origin) => origin.trim())
-        .filter(Boolean),
-    ),
-  ),
   OAUTH_PROXY_PRODUCTION_URL: pipe(string(), url()),
   OAUTH_PROXY_SECRET: pipe(string(), minLength(32)),
   DATABASE_URL: string(),

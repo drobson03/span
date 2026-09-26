@@ -6,9 +6,6 @@ import { db } from "~/lib/server/db";
 import { env } from "~/lib/server/env";
 
 export const auth = betterAuth({
-  baseURL: env.BETTER_AUTH_URL,
-  secret: env.BETTER_AUTH_SECRET,
-  trustedOrigins: env.BETTER_AUTH_TRUSTED_ORIGINS,
   emailAndPassword: {
     enabled: false,
   },
