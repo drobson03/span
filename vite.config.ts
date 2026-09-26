@@ -1,19 +1,11 @@
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-import tsConfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
-import { nitro } from 'nitro/vite'
 
+// Alchemy supplies the Cloudflare runtime and real service/database bindings.
 export default defineConfig({
-  server: {
-    port: 3000,
-  },
-  plugins: [
-    tsConfigPaths({ projects: ["./tsconfig.json"] }),
-    tailwindcss(),
-    tanstackStart(),
-    nitro(),
-    react(),
-  ],
+  resolve: { tsconfigPaths: true },
+  server: { port: 3000 },
+  plugins: [tailwindcss(), tanstackStart(), react()],
 });

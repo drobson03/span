@@ -17,7 +17,7 @@ import {
   variant,
 } from "valibot";
 import { getUser } from "~/lib/server/auth/functions";
-import { db } from "~/lib/server/db";
+import { getDb } from "~/lib/server/db";
 import {
   type Workout,
   type WorkoutWithRelations,
@@ -52,7 +52,7 @@ export const getWorkoutsByDate = createServerFn({ method: "GET" })
     }
 
     return reduceWorkoutsByDate(
-      await db.query.workout.findMany({
+      await getDb().query.workout.findMany({
         orderBy: (workouts, { desc }) => [desc(workouts.date)],
         where: (workouts, { gte, eq, and }) => {
           return and(
@@ -83,7 +83,7 @@ export const getWorkoutsByDateForMonth = createServerFn({
     }
 
     return reduceWorkoutsByDate(
-      await db.query.workout.findMany({
+      await getDb().query.workout.findMany({
         orderBy: (workouts, { desc }) => [desc(workouts.date)],
         where: (workouts, { and, eq, sql }) => {
           return and(
@@ -111,7 +111,7 @@ async function getWorkoutsFn() {
     return [];
   }
 
-  return await db.query.workout.findMany({
+  return await getDb().query.workout.findMany({
     orderBy: (workouts, { desc }) => [desc(workouts.date)],
     where: (workouts, { eq }) => eq(workouts.userId, user.id),
     with: {
@@ -136,7 +136,7 @@ export const getWorkoutsQueryOptions = queryOptions({
 
 export const getExerciseTypes = createServerFn({ method: "GET" }).handler(
   async () => {
-    return await db.query.exerciseType.findMany({
+    return await getDb().query.exerciseType.findMany({
       orderBy: (exerciseTypes, { asc }) => [asc(exerciseTypes.name)],
     });
   },
@@ -197,7 +197,7 @@ export const createWorkout = createServerFn({ method: "POST" })
       throw new Error("Not authenticated");
     }
 
-    const results = await db
+    const results = await getDb()
       .insert(workoutTable)
       .values({
         userId: user.id,
@@ -217,7 +217,7 @@ export const createWorkout = createServerFn({ method: "POST" })
       return;
     }
 
-    const exercises = await db
+    const exercises = await getDb()
       .insert(exercise)
       .values(
         workout.exercises.map((exercise) => ({
@@ -251,7 +251,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
       throw new Error("Not authenticated");
     }
 
-    const exists = await db.query.workout.findFirst({
+    const exists = await getDb().query.workout.findFirst({
       where: (workouts, { eq, and }) =>
         and(eq(workouts.id, workout.id), eq(workouts.userId, user.id)),
     });
@@ -260,7 +260,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
       throw new Error("Workout not found");
     }
 
-    await db
+    await getDb()
       .update(workoutTable)
       .set({
         notes: workout.notes || null,
@@ -270,10 +270,10 @@ export const updateWorkout = createServerFn({ method: "POST" })
       })
       .where(eq(workoutTable.id, workout.id));
 
-    await db.delete(exercise).where(eq(exercise.workoutId, workout.id));
+    await getDb().delete(exercise).where(eq(exercise.workoutId, workout.id));
 
     if (workout.exercises.length > 0) {
-      await db
+      await getDb()
         .insert(exercise)
         .values(
           workout.exercises.map((ex) => ({
@@ -298,7 +298,7 @@ export const deleteWorkout = createServerFn({ method: "POST" })
       throw new Error("Not authenticated");
     }
 
-    await db
+    await getDb()
       .delete(workoutTable)
       .where(
         and(eq(workoutTable.id, ctx.data.id), eq(workoutTable.userId, user.id)),
@@ -314,7 +314,7 @@ export const getWorkout = createServerFn({ method: "GET" })
       throw new Error("Not authenticated");
     }
 
-    const workout = await db.query.workout.findFirst({
+    const workout = await getDb().query.workout.findFirst({
       where: (workouts, { eq, and }) =>
         and(eq(workouts.id, ctx.data.id), eq(workouts.userId, user.id)),
       with: {
@@ -356,7 +356,7 @@ export const getWorkoutsWithTagFilter = createServerFn({ method: "GET" })
       conditions.push(sql`${workoutTable.tags} @> ${tags}`);
     }
 
-    return await db.query.workout.findMany({
+    return await getDb().query.workout.findMany({
       orderBy: (workouts, { desc }) => [desc(workouts.date)],
       where: and(...conditions),
       with: {
@@ -397,7 +397,7 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
       return [];
     }
 
-    const workouts = await db.query.workout.findMany({
+    const workouts = await getDb().query.workout.findMany({
       orderBy: (workouts, { asc }) => [asc(workouts.date)],
       where: (workouts, { eq }) => eq(workouts.userId, user.id),
       with: {
@@ -430,7 +430,10 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
         const existingEntry = progression.data.find((d) => d.date === dateStr);
 
         if (existingEntry) {
-          existingEntry.maxWeight = Math.max(existingEntry.maxWeight, ex.weight);
+          existingEntry.maxWeight = Math.max(
+            existingEntry.maxWeight,
+            ex.weight,
+          );
           existingEntry.totalVolume += totalVolume;
           existingEntry.totalReps += totalReps;
           existingEntry.sets += ex.sets.length;

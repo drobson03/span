@@ -4,7 +4,13 @@ yarn.lock
 
 .DS_Store
 .cache
+.alchemy/
 .env
+.env.*
+!.env.example
+!.env.production.example
+.dev.vars*
+dist/
 .vercel
 .output
 .vinxi
