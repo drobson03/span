@@ -4,7 +4,7 @@ import * as Output from "alchemy/Output";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
 import { Database, databaseProviders } from "./infra/database";
-import AuthApi from "./src/auth/worker";
+import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 
 const productionDomain = "span.darcyr.dev";
@@ -21,7 +21,14 @@ export const Website = Cloudflare.Website.Vite(
           (yield* Database).pooledConnectionUri,
           Redacted.make,
         ),
-        AUTH: AuthApi,
+        BETTER_AUTH_URL: Config.String("BETTER_AUTH_URL"),
+        BETTER_AUTH_SECRET: Config.Redacted("BETTER_AUTH_SECRET"),
+        GOOGLE_CLIENT_ID: Config.String("GOOGLE_CLIENT_ID"),
+        GOOGLE_CLIENT_SECRET: Config.Redacted("GOOGLE_CLIENT_SECRET"),
+        OAUTH_PROXY_SECRET: Config.Redacted("OAUTH_PROXY_SECRET"),
+        BETTER_AUTH_TRUSTED_ORIGINS: Config.String(
+          "BETTER_AUTH_TRUSTED_ORIGINS",
+        ).pipe(Config.withDefault("")),
       },
     };
   }),
@@ -37,7 +44,6 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const database = yield* Database;
-    yield* AuthApi;
     const website = yield* Website;
 
     return {

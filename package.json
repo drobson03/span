@@ -4,16 +4,13 @@
   "scripts": {
     "db:push": "drizzle-kit push",
     "dev": "alchemy dev",
-    "build": "node scripts/build.mjs",
+    "build": "vite build",
     "format": "prettier --write ./src --cache",
     "lint": "biome check --write .",
     "deploy": "alchemy deploy",
-    "typecheck": "tsc --noEmit",
-    "test:smoke": "node scripts/smoke.mjs",
-    "test:database": "node --experimental-strip-types --test tests/database.test.mjs"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@alchemy.run/better-auth": "2.0.0-beta.79",
     "@distilled.cloud/neon": "1.0.0-rc.12",
     "@effect/platform-bun": "4.0.0-rc.117",
     "@effect/platform-node": "4.0.0-rc.117",

@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@alchemy.run/better-auth':
-        specifier: 2.0.0-beta.79
-        version: 2.0.0-beta.79(306cbb33d64f6c65bba64b794493f332)
       '@distilled.cloud/neon':
         specifier: 1.0.0-rc.12
         version: 1.0.0-rc.12(effect@4.0.0-rc.117)
@@ -152,35 +149,6 @@ importers:
         version: 5.9.3
 
 packages:
-
-  '@alchemy.run/better-auth@2.0.0-beta.79':
-    resolution: {integrity: sha512-hkmM0l1j18RBdJV82BsJiT38V2ijs5sFLRRD6kqsg01htARqDMjEq/hBgM139KNlP1UPSgRIK1psIRg66fqeyg==}
-    peerDependencies:
-      '@cloudflare/workers-types': 5.20260901.1
-      '@distilled.cloud/aws': 1.0.0-rc.12
-      '@neondatabase/serverless': ^1.0.1
-      alchemy: 2.0.0-beta.79
-      better-auth: ^1.6.2
-      drizzle-orm: 1.0.0-rc.5-ab785fc
-      effect: '>=4.0.0-rc.115 || >=4.0.0'
-      kysely: ^0.29.4
-      mysql2: ^3.24.2
-      pg: ^8.22.0
-    peerDependenciesMeta:
-      '@cloudflare/workers-types':
-        optional: true
-      '@distilled.cloud/aws':
-        optional: true
-      '@neondatabase/serverless':
-        optional: true
-      drizzle-orm:
-        optional: true
-      kysely:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
 
   '@alchemy.run/cloudflare-runtime@2.0.0-beta.79':
     resolution: {integrity: sha512-v/kmQ4s9B2PcHo4NSxm76OcmaQsX2TkQoy2IzB4FBu/4kJ6gkEBYKKLz4FK6x4ewOAtwI7kQwZ8OmzAmft3xoQ==}
@@ -4790,18 +4758,6 @@ packages:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
 snapshots:
-
-  '@alchemy.run/better-auth@2.0.0-beta.79(306cbb33d64f6c65bba64b794493f332)':
-    dependencies:
-      alchemy: 2.0.0-beta.79(@effect/platform-bun@4.0.0-rc.117(effect@4.0.0-rc.117))(@effect/platform-node@4.0.0-rc.117(effect@4.0.0-rc.117)(redis@6.2.1(@opentelemetry/api@1.9.0)))(@types/node@25.3.0)(@types/react@19.2.14)(drizzle-kit@0.31.9)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260901.1)(@electric-sql/pglite@0.3.15)(@libsql/client-wasm@0.14.0)(@libsql/client@0.15.6)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(gel@2.0.2)(kysely@0.29.6))(effect@4.0.0-rc.117)(typescript@5.9.3)(vite@8.3.1(@types/node@25.3.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1))(vitest@5.0.1(@opentelemetry/api@1.9.0)(@types/node@25.3.0)(vite@8.3.1(@types/node@25.3.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1)))(ws@8.21.3)
-      better-auth: 1.7.6(@opentelemetry/api@1.9.0)(@tanstack/react-start@1.161.3(crossws@0.4.4(srvx@0.10.1))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite@8.3.1(@types/node@25.3.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1)))(drizzle-kit@0.31.9)(drizzle-orm@0.45.3(@cloudflare/workers-types@5.20260901.1)(@electric-sql/pglite@0.3.15)(@libsql/client-wasm@0.14.0)(@libsql/client@0.15.6)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(gel@2.0.2)(kysely@0.29.6))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@5.0.1(@opentelemetry/api@1.9.0)(@types/node@25.3.0)(vite@8.3.1(@types/node@25.3.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1)))
-      effect: 4.0.0-rc.117
-    optionalDependencies:
-      '@cloudflare/workers-types': 5.20260901.1
-      '@distilled.cloud/aws': 1.0.0-rc.12(effect@4.0.0-rc.117)
-      '@neondatabase/serverless': 1.0.2
-      drizzle-orm: 0.45.3(@cloudflare/workers-types@5.20260901.1)(@electric-sql/pglite@0.3.15)(@libsql/client-wasm@0.14.0)(@libsql/client@0.15.6)(@neondatabase/serverless@1.0.2)(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(gel@2.0.2)(kysely@0.29.6)
-      kysely: 0.29.6
 
   '@alchemy.run/cloudflare-runtime@2.0.0-beta.79(@distilled.cloud/cloudflare@1.0.0-rc.12(effect@4.0.0-rc.117))(@effect/platform-bun@4.0.0-rc.117(effect@4.0.0-rc.117))(@effect/platform-node@4.0.0-rc.117(effect@4.0.0-rc.117)(redis@6.2.1(@opentelemetry/api@1.9.0)))(@types/node@25.3.0)(effect@4.0.0-rc.117)(rolldown@1.2.5)(typescript@5.9.3)(vite@8.3.1(@types/node@25.3.0)(esbuild@0.27.2)(jiti@2.6.1)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1))':
     dependencies:

@@ -1,18 +1,15 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { getResponseHeaders, getRequest } from "@tanstack/react-start/server";
-import { getEnv } from "~/lib/server/env";
+import { getRequest } from "@tanstack/react-start/server";
+import { getAuth } from "~/lib/server/auth";
 
 export const getUser = createServerFn({ method: "GET" }).handler(async () => {
   const request = getRequest()!;
 
-  const result = await getEnv().AUTH.getSession(
-    Object.fromEntries(request.headers),
-  );
-  if (!("session" in result)) throw new Error("Authentication service failed");
-  const { session, cookies } = result;
-  for (const cookie of cookies)
-    getResponseHeaders().append("set-cookie", cookie);
+  const session = await getAuth().api.getSession({
+    headers: request.headers,
+    query: { disableCookieCache: true },
+  });
 
   return { session: session?.session, user: session?.user };
 });
