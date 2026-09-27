@@ -1,13 +1,21 @@
 import * as Alchemy from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
-import * as Output from "alchemy/Output";
 import * as Layer from "effect/Layer";
-import * as Redacted from "effect/Redacted";
 import { Database, databaseProviders } from "./infra/database";
 import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 
 const productionDomain = "span.darcyr.dev";
+
+export const Hyperdrive = Effect.gen(function* () {
+  const database = yield* Database;
+  return yield* Cloudflare.Hyperdrive.Connection("Hyperdrive", {
+    origin: database.origin,
+    dev: database.pooledOrigin,
+    // Auth and workout reads must reflect writes immediately.
+    caching: { disabled: true },
+  });
+});
 
 export const Website = Cloudflare.Website.Vite(
   "Website",
@@ -17,10 +25,7 @@ export const Website = Cloudflare.Website.Vite(
       domain: stage === "prod" ? productionDomain : undefined,
       compatibility: { date: "2026-09-01", flags: ["nodejs_compat"] },
       env: {
-        DATABASE_URL: Output.map(
-          (yield* Database).pooledConnectionUri,
-          Redacted.make,
-        ),
+        HYPERDRIVE: yield* Hyperdrive,
         BETTER_AUTH_URL: Config.String("BETTER_AUTH_URL"),
         BETTER_AUTH_SECRET: Config.Redacted("BETTER_AUTH_SECRET"),
         GOOGLE_CLIENT_ID: Config.String("GOOGLE_CLIENT_ID"),
@@ -44,10 +49,12 @@ export default Alchemy.Stack(
   },
   Effect.gen(function* () {
     const database = yield* Database;
+    const hyperdrive = yield* Hyperdrive;
     const website = yield* Website;
 
     return {
       databaseBranchId: database.branchId,
+      hyperdriveId: hyperdrive.hyperdriveId,
       websiteUrl: website.url,
     };
   }),

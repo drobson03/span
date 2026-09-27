@@ -6,7 +6,7 @@ A workout tracking app with analytics and calendar views. Built with TanStack St
 
 - **Framework:** [TanStack Start](https://tanstack.com/start) (React 19, Vite, SSR)
 - **Hosting:** Cloudflare Workers and static assets, managed by [Alchemy](https://alchemy.run)
-- **Database:** PostgreSQL (Neon) with [Drizzle ORM](https://orm.drizzle.team)
+- **Database:** PostgreSQL (Neon) through Cloudflare Hyperdrive with [Drizzle ORM](https://orm.drizzle.team)
 - **Auth:** [Better Auth](https://www.better-auth.com)
 - **Styling:** Tailwind CSS v4, Radix UI, shadcn/ui
 - **Charts:** Recharts
@@ -39,7 +39,8 @@ The `Span` stack in `alchemy.run.ts` composes the documented [TanStack Start](ht
 
 - `Website`: `Cloudflare.Website.Vite` serves TanStack Start SSR, static assets, and server functions. Vite config contains only the app's normal plugins; `alchemy dev` and deploy inject the Cloudflare integration.
 - Better Auth runs directly in the website Worker using the Drizzle adapter and existing schema. The `/api/auth/*` route calls its handler, and server functions read sessions directly. The TanStack Start cookie plugin forwards session cookies to the response.
-- `Database`: an Alchemy `Neon.Branch` adopts the existing branch in the existing project. The website derives its connection from its resource output. No manually copied database URL is needed for deployment. Existing tables, users, sessions, and workouts remain in place.
+- `Database`: an Alchemy `Neon.Branch` adopts the existing branch in the existing project. Hyperdrive derives its origin from this resource output. No manually copied database URL is needed for deployment. Existing tables, users, sessions, and workouts remain in place.
+- `Hyperdrive`: a [Cloudflare Hyperdrive connection](https://alchemy.run/cloudflare/data/hyperdrive.md) fronts the existing Neon branch and is bound to the website as `HYPERDRIVE`. Production uses the direct Neon origin; local Alchemy development uses Neon's pooled origin. Query caching is disabled so session checks and workout reads reflect writes immediately. Both Better Auth and app queries use Drizzle's `node-postgres` adapter. Clients are created inside requests and closed when released; Hyperdrive manages the origin connection pool.
 
 There is no R2 resource. Cloudflare-hosted Alchemy state uses its own state-store Worker and Durable Object.
 
@@ -62,9 +63,9 @@ The project itself stays outside this stack's ownership. No new project or branc
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Existing Google OAuth credentials                                                                        |
 | `OAUTH_PROXY_SECRET`                        | Existing shared proxy secret, at least 32 characters                                                     |
 | `BETTER_AUTH_TRUSTED_ORIGINS`               | Optional comma-separated additional trusted local/preview origins                                        |
-| `DATABASE_URL`                              | Optional for manually running `db:push`; deployment derives it from Neon                                 |
+| `DATABASE_URL`                              | Optional for manually running `db:push`; the website uses `HYPERDRIVE`                                 |
 
-Auth configuration is bound directly to the website Worker. Secret values use `Config.Redacted`; the database connection is also bound as a secret. Management API credentials stay in Alchemy profiles, not in the website's bindings. Do not prefix secrets with `VITE_`.
+Auth configuration is bound directly to the website Worker. Secret values use `Config.Redacted`; the database connection is supplied by the `HYPERDRIVE` binding. Management API credentials stay in Alchemy profiles, not in the website's bindings. Do not prefix secrets with `VITE_`.
 
 ### Production and Google sign-in
 
@@ -93,7 +94,7 @@ After confirming the individual deployment:
 pnpm alchemy deploy --stage prod --env-file .env.production
 ```
 
-Alchemy resolves the existing branch by ID/name through Neon, adopts it, and deploys the website Worker. Review the plan before accepting it. Verify the returned `websiteUrl` and `databaseBranchId`, then check Google sign-in and authenticated workout reads/writes. These live checks require real credentials.
+Alchemy resolves the existing branch by ID/name through Neon, adopts it, provisions Hyperdrive, and deploys the website Worker. Review the plan before accepting it. Verify the returned `websiteUrl`, `databaseBranchId`, and `hyperdriveId`, then check Google sign-in and authenticated workout reads/writes. These live checks require real credentials.
 
 ### Development and checks
 
