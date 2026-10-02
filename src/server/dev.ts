@@ -4,7 +4,7 @@ import {
   NodeRuntime,
   NodeServices,
 } from "@effect/platform-node";
-import { Layer } from "effect";
+import { Exit, Layer } from "effect";
 import { HttpRouter } from "effect/http";
 import { createServer as createViteServer } from "vite";
 import { makeRoutes } from "./application";
@@ -27,7 +27,7 @@ NodeRuntime.runMain(
   {
     teardown: async (exit, onExit) => {
       await vite.close();
-      onExit(exit._tag === "Success" ? 0 : 1);
+      onExit(Exit.isSuccess(exit) ? 0 : 1);
     },
   },
 );

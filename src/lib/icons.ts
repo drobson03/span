@@ -27,29 +27,27 @@ import type { IconNode, SVGProps } from "lucide";
 
 const svgElement =
   <M>(tag: string, h: HtmlBuilder<M>) =>
-  (attributes: ReadonlyArray<Attribute<M> | ChildAttribute>): Html => {
-    switch (tag) {
-      case "path":
-        return h.path(attributes);
-      case "circle":
-        return h.circle(attributes);
-      case "rect":
-        return h.rect(attributes);
-      case "line":
-        return h.line(attributes);
-      case "polyline":
-        return h.polyline(attributes);
-      case "polygon":
-        return h.polygon(attributes);
-      default:
-        return h.path(attributes);
-    }
+  (attributes: readonly (Attribute<M> | ChildAttribute)[]): Html => {
+    const renderers: Record<
+      string,
+      (attrs: readonly (Attribute<M> | ChildAttribute)[]) => Html
+    > = {
+      path: h.path,
+      circle: h.circle,
+      rect: h.rect,
+      line: h.line,
+      polyline: h.polyline,
+      polygon: h.polygon,
+    };
+    return (Object.hasOwn(renderers, tag) ? renderers[tag]! : h.path)(
+      attributes,
+    );
   };
 
 const svgAttributes = <M>(
   className: string,
   h: HtmlBuilder<M>,
-): ReadonlyArray<Attribute<M> | ChildAttribute> => [
+): readonly (Attribute<M> | ChildAttribute)[] => [
   h.AriaHidden(true),
   h.Class(className),
   h.Xmlns("http://www.w3.org/2000/svg"),
@@ -64,7 +62,7 @@ const svgAttributes = <M>(
 const nodeToAttributes = <M>(
   attrs: SVGProps,
   h: HtmlBuilder<M>,
-): ReadonlyArray<Attribute<M> | ChildAttribute> =>
+): readonly (Attribute<M> | ChildAttribute)[] =>
   Object.entries(attrs).map(([name, value]) =>
     h.Attribute(name, String(value)),
   );

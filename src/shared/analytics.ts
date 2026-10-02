@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import type { Workout } from "./workouts";
+
 export const dayKey = (date: string | Date) =>
   format(new Date(date), "yyyy-MM-dd");
 export const workoutsByDay = (workouts: readonly Workout[]) => {
@@ -32,7 +33,7 @@ export const progression = (workouts: readonly Workout[]) => {
       >;
     }
   >();
-  for (const w of workouts)
+  for (const w of workouts) {
     for (const e of w.exercises) {
       const group = groups.get(e.exerciseTypeId) ?? {
         name: e.exerciseType.name,
@@ -54,6 +55,7 @@ export const progression = (workouts: readonly Workout[]) => {
       point.sets += e.sets.length;
       group.days.set(date, point);
     }
+  }
   return [...groups]
     .map(([id, g]) => ({
       id,

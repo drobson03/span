@@ -1,4 +1,5 @@
 import { defineConfig } from "drizzle-kit";
+
 export default defineConfig({
   schema: [
     "./src/lib/server/db/schema/auth.ts",

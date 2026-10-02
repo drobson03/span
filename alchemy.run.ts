@@ -1,6 +1,7 @@
 import * as Alchemy from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import { Config, Effect } from "effect";
+
 export const Website = Cloudflare.Website.Foldkit(
   "Span",
   Effect.gen(function* () {
@@ -23,7 +24,12 @@ export const Website = Cloudflare.Website.Foldkit(
       },
       dev: { host: "127.0.0.1", port: 3000, strictPort: true },
     };
-  }).pipe(Effect.orDie),
+  }).pipe(
+    // Alchemy's resource input requires an infallible Effect. Missing deployment
+    // configuration terminates the CLI here, before provisioning any resource.
+    // oxlint-disable-next-line executor/no-effect-escape-hatch
+    Effect.orDie,
+  ),
 );
 export default Alchemy.Stack(
   "Span",

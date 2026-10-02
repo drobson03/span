@@ -4,6 +4,7 @@
     "alchemy.run.ts",
     "vite.config.ts",
     "drizzle.config.ts",
+    "oxlint.config.ts",
     "test/**/*.ts"
   ],
   "compilerOptions": {

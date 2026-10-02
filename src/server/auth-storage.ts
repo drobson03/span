@@ -18,6 +18,9 @@ import {
 
 const error = () =>
   PersistenceMappingError.make({ operation: "span.oauth", cause: undefined });
+const decodeRegistration = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Registration),
+);
 const uuid = Effect.sync(() => crypto.randomUUID());
 const subjectId: Mapping.SubjectIdCodec<string> = {
   toNative: (id) => Effect.succeed(id),
@@ -231,8 +234,7 @@ const registration = {
   snapshot: (r: typeof Registration.Type) => Effect.succeed(r),
   application: {
     encode: JSON.stringify,
-    decode: (s: string) =>
-      Schema.decodeUnknownSync(Registration)(JSON.parse(s)),
+    decode: decodeRegistration,
   },
   eligibility: {
     admission: ({ intent }: { intent: OAuth.OAuthRegistrationIntent }) =>

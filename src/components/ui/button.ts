@@ -71,10 +71,10 @@ export type ButtonConfig<M> = Readonly<{
   className?: string;
   /** Extra attributes merged onto the button element (ids, handlers,
    *  popoover anchors, …). */
-  attributes?: ReadonlyArray<Attribute<M>>;
+  attributes?: readonly Attribute<M>[];
 }>;
 
-export type ButtonLabel = Html | string | ReadonlyArray<Html | string>;
+export type ButtonLabel = Html | string | readonly (Html | string)[];
 
 /** Styled button built on the @foldkit/ui Button helper. */
 export const button = <M>(

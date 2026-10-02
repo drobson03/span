@@ -4,6 +4,10 @@ import { Effect, Redacted, Schema } from "effect";
 
 // Only Google's external protocol is replaced. HTTP, cookies, crypto,
 // durable flows, registration, sessions, and PostgreSQL adapters are real.
+const decodeConfiguration = Schema.decodeUnknownSync(
+  OAuth.OAuthProtocolConfiguration,
+);
+const decodeIdentity = Schema.decodeUnknownSync(OAuth.OAuthExternalIdentity);
 export const google: OAuth.ProviderDefinition = {
   configure: ({ provider, callbacks }) =>
     Effect.succeed({
@@ -11,9 +15,7 @@ export const google: OAuth.ProviderDefinition = {
         Effect.sync(() => {
           const state = randomBytes(32).toString("base64url");
           return {
-            configuration: Schema.decodeUnknownSync(
-              OAuth.OAuthProtocolConfiguration,
-            )({
+            configuration: decodeConfiguration({
               provider,
               protocol: "oidc",
               configurationGeneration: 1,
@@ -36,7 +38,7 @@ export const google: OAuth.ProviderDefinition = {
         }),
       exchangeVerifiedIdentity: () =>
         Effect.succeed({
-          identity: Schema.decodeUnknownSync(OAuth.OAuthExternalIdentity)({
+          identity: decodeIdentity({
             provider,
             issuer: "https://accounts.google.com",
             subject: "google-new-subject",

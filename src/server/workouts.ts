@@ -1,6 +1,7 @@
 import { Auth } from "@yielded/auth";
 import { and, eq } from "drizzle-orm";
-import { Effect, Schema } from "effect";
+import { Effect, Predicate, Schema } from "effect";
+import { catch as recoverFailure } from "effect/Effect";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 import {
   exercise,
@@ -42,7 +43,9 @@ export const saveWorkout = (
             })
             .where(and(eq(workout.id, id), eq(workout.userId, subjectId)))
             .returning({ id: workout.id });
-          if (!rows[0]) return yield* new NotFound();
+          if (!rows[0]) {
+            return yield* new NotFound();
+          }
           workoutId = rows[0].id;
           yield* db.delete(exercise).where(eq(exercise.workoutId, workoutId));
         } else {
@@ -57,7 +60,7 @@ export const saveWorkout = (
             .returning({ id: workout.id });
           workoutId = rows[0]!.id;
         }
-        if (data.exercises.length)
+        if (data.exercises.length) {
           yield* db.insert(exercise).values(
             data.exercises.map((e) => ({
               workoutId,
@@ -68,6 +71,7 @@ export const saveWorkout = (
               sets: e.sets.map((s) => ({ reps: s.reps })),
             })),
           );
+        }
         return { id: workoutId };
       }),
     );
@@ -79,7 +83,9 @@ export const deleteWorkout = (subjectId: string, id: string) =>
       .delete(workout)
       .where(and(eq(workout.id, id), eq(workout.userId, subjectId)))
       .returning({ id: workout.id });
-    if (!deleted.length) return yield* new NotFound();
+    if (!deleted.length) {
+      return yield* new NotFound();
+    }
   });
 const currentSubject = Effect.gen(function* () {
   const auth = yield* AppAuth;
@@ -92,19 +98,16 @@ const readInput = Effect.gen(function* () {
 const response = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
   effect.pipe(
     Effect.flatMap((body) => HttpServerResponse.json(body)),
-    Effect.catch((error: unknown) => {
-      const tag =
-        typeof error === "object" && error !== null && "_tag" in error
-          ? error._tag
-          : "";
-      const status =
-        tag === "NotFound"
-          ? 404
-          : tag === "AuthenticationRequired" || tag === "SessionInvalid"
-            ? 401
-            : tag === "SchemaError" || tag === "RequestError"
-              ? 400
-              : 500;
+    recoverFailure((error: unknown) => {
+      const status = Predicate.isTagged(error, "NotFound")
+        ? 404
+        : Predicate.isTagged(error, "AuthenticationRequired") ||
+            Predicate.isTagged(error, "SessionInvalid")
+          ? 401
+          : Predicate.isTagged(error, "SchemaError") ||
+              Predicate.isTagged(error, "RequestError")
+            ? 400
+            : 500;
       return HttpServerResponse.json(
         {
           error:
@@ -132,11 +135,12 @@ const mutate = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
             Effect.catchTag("HookDenied", () => Effect.succeed(false)),
           );
     // Same-origin POSTs require an explicit header. Browsers cannot add it cross-origin without a preflight.
-    if (!admitted || request.headers["x-span-csrf"] !== "1")
+    if (!admitted || request.headers["x-span-csrf"] !== "1") {
       return yield* HttpServerResponse.json(
         { error: "Invalid request" },
         { status: 403 },
       );
+    }
     return yield* response(effect);
   });
 export const WorkoutRoutes = LayerRoutes();

@@ -58,7 +58,8 @@ Alchemy owns the Foldkit asset build, Worker, and Cloudflare deployment state. D
 | Command            | Purpose                                       |
 | ------------------ | --------------------------------------------- |
 | `pnpm check`       | Type-check client, server, and infrastructure |
-| `pnpm lint`        | Check with Biome                              |
+| `pnpm lint`        | Check with Oxlint, Ultracite, and local rules |
+| `pnpm lint:fix`    | Apply safe automatic lint fixes               |
 | `pnpm test`        | PostgreSQL integration and application tests  |
 | `pnpm build`       | Build the Foldkit application                 |
 | `pnpm db:generate` | Generate a migration after changing schemas   |
@@ -67,6 +68,8 @@ Alchemy owns the Foldkit asset build, Worker, and Cloudflare deployment state. D
 
 Tests create isolated PGlite databases and exercise PostgreSQL semantics, including the production driver over the PostgreSQL wire protocol. They do not require or change your database or contact Google.
 
-The UI follows Foldkit's model/update/view architecture in `src/main.ts`; copied Foldcn components live in `src/components/ui`. Shared Effect schemas and analytics are in `src/shared`. Server composition, Yielded persistence mappings, migrations, and workout handlers live in `src/server`. `src/worker.ts` adapts the HTTP app to Cloudflare; `src/server/node.ts` runs it on Node.
+Oxlint loads `oxlint.config.ts`, which extends Ultracite and enables the local `executor` Effect rules and `@shadcn/lint` design-system rules. Prettier handles formatting through `pnpm format`. The Shadcn plugin checks class helpers such as `cn()` but does not directly inspect Foldkit's `h.Class()` attributes.
+
+The UI follows Foldkit's model/update/view architecture in `src/client`, with separate state schemas, messages, commands, updates, and screen views. `src/entry.ts` wires the runtime; copied Foldcn components live in `src/components/ui`. Shared Effect schemas and analytics are in `src/shared`. Server composition, Yielded persistence mappings, migrations, and workout handlers live in `src/server`. `src/worker.ts` adapts the HTTP app to Cloudflare; `src/server/node.ts` runs it on Node.
 
 Effect is pinned to stable 4.0.0. Yielded, Alchemy, and the Drizzle Effect integration are pinned to compatible prerelease versions in `package.json` and the lockfile; update them together after checking their peer requirements. `patches/effect@4.0.0.patch` supplies compatibility aliases for Alchemy beta.79 and its SDKs, which still import the pre-stable `effect/unstable/*` and `effect/Encoding` paths. The aliases use stable Effect 4 implementations. Keep this patch until those dependencies update their imports.

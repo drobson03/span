@@ -103,6 +103,9 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --color-native-canvas: Canvas;
+  --color-native-canvas-text: CanvasText;
 }
 @layer base {
   * {
@@ -112,4 +115,20 @@
     @apply bg-background text-foreground;
     font-family: system-ui, sans-serif;
   }
+}
+
+@utility card-spacing {
+  --card-spacing: --spacing(4);
+  &[data-size="sm"] {
+    --card-spacing: --spacing(3);
+  }
+}
+@utility card-header-columns {
+  grid-template-columns: 1fr auto;
+}
+@utility card-header-rows {
+  grid-template-rows: auto auto;
+}
+@utility native-select-small-radius {
+  border-radius: min(var(--radius-md), 10px);
 }

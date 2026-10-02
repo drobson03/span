@@ -1,8 +1,8 @@
 import type { Html, HtmlBuilder } from "foldkit/html";
 
-type Child = Html | string;
-
 import { cn } from "@/lib/utils";
+
+type Child = Html | string;
 
 // Card is a pure layout primitive (no @foldkit/ui backing — there is no
 // headless Card). `Card` itself is the container; sub-builders are attached
@@ -13,13 +13,13 @@ export const cardSizeKeys = ["default", "sm"] as const;
 export type CardSize = (typeof cardSizeKeys)[number];
 
 export const cardClass =
-  "ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl group/card flex flex-col";
+  "ring-foreground/10 bg-card text-card-foreground gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 card-spacing has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl group/card flex flex-col";
 
 export const cardHeaderClass =
-  "gap-1 rounded-t-xl px-(--card-spacing) [.border-b]:pb-(--card-spacing) group/card-header @container/card-header grid auto-rows-min items-start has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto]";
+  "gap-1 rounded-t-xl px-(--card-spacing) [.border-b]:pb-(--card-spacing) group/card-header @container/card-header grid auto-rows-min items-start has-data-[slot=card-action]:card-header-columns has-data-[slot=card-description]:card-header-rows";
 
 export const cardTitleClass =
-  "text-base leading-snug font-medium group-data-[size=sm]/card:text-sm font-heading";
+  "text-base leading-snug font-medium group-data-[size=sm]/card:text-sm";
 
 export const cardDescriptionClass = "text-muted-foreground text-sm";
 
@@ -38,7 +38,7 @@ type CardConfig = Readonly<{ className?: string; size?: CardSize }>;
 /** Outermost card surface. */
 const cardContainer = <M>(
   config: CardConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(
@@ -53,7 +53,7 @@ const cardContainer = <M>(
 /** Header wrapper — positions title, description and action via CSS grid. */
 const cardHeader = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(
@@ -67,7 +67,7 @@ const cardHeader = <M>(
 /** Card title. */
 const cardTitle = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(
@@ -81,7 +81,7 @@ const cardTitle = <M>(
 /** Card description text. */
 const cardDescription = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(
@@ -95,7 +95,7 @@ const cardDescription = <M>(
 /** Action area pinned to the top-right of the header. */
 const cardAction = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(
@@ -109,7 +109,7 @@ const cardAction = <M>(
 /** Main content area. */
 const cardContent = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(
@@ -123,7 +123,7 @@ const cardContent = <M>(
 /** Footer area. */
 const cardFooter = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(

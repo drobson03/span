@@ -2,7 +2,7 @@ import { Auth, Hooks, Http, OAuth, WebCrypto } from "@yielded/auth";
 import * as OAuthCrypto from "@yielded/auth-crypto/OAuth";
 import * as OpenIdClient from "@yielded/auth-openid-client";
 import { eq } from "drizzle-orm";
-import { Effect, Layer, Redacted, Schema } from "effect";
+import { Effect, Layer, Predicate, Redacted, Schema } from "effect";
 import { FetchHttpClient, HttpRouter, HttpServer } from "effect/http";
 import { user } from "../lib/server/db/schema/auth";
 import { AuthApi } from "../shared/auth";
@@ -12,6 +12,10 @@ import { OAuthStorageLive } from "./auth-storage";
 import type { ServerConfig } from "./config";
 import { Database, databaseLayer } from "./database";
 import { WorkoutRoutes } from "./workouts";
+
+const decodeSignIn = Schema.decodeUnknownEffect(
+  AuthApi.actions.completeSignIn.route.operation.rpc.successSchema,
+);
 
 export const makeRoutes = (
   config: ServerConfig,
@@ -42,18 +46,19 @@ export const makeRoutes = (
       },
       respond: (value, { flowId }): Effect.Effect<Response> =>
         Effect.gen(function* () {
-          const result = yield* Schema.decodeUnknownEffect(
-            AuthApi.actions.completeSignIn.route.operation.rpc.successSchema,
-          )(value).pipe(Effect.orDie);
-          const target =
-            "_tag" in result && result._tag === "RegistrationRequired"
-              ? `/register?${new URLSearchParams({ flowId, reference: result.reference })}`
-              : result.returnTarget;
+          const result = yield* decodeSignIn(value);
+          const target = Predicate.isTagged(result, "RegistrationRequired")
+            ? `/register?${new URLSearchParams({ flowId, reference: result.reference })}`
+            : result.returnTarget;
           return new Response(null, {
             status: 303,
             headers: { location: target },
           });
-        }),
+        }).pipe(
+          Effect.catchTag("SchemaError", () =>
+            Effect.succeed(new Response(null, { status: 500 })),
+          ),
+        ),
     },
   });
   const claims = Layer.effect(
@@ -67,8 +72,9 @@ export const makeRoutes = (
               .select()
               .from(user)
               .where(eq(user.id, subjectId));
-            if (!account?.enabled || account.banned)
+            if (!account?.enabled || account.banned) {
               return yield* OAuth.OAuthRejected.make({});
+            }
             return { displayName: account.name, email: account.email };
           }).pipe(Effect.mapError(() => OAuth.OAuthUnavailable.make({}))),
       };

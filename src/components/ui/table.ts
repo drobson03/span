@@ -34,7 +34,7 @@ type StyleConfig = Readonly<{ className?: string }>;
 
 const tableContainer = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.div(
@@ -55,7 +55,7 @@ const tableContainer = <M>(
 
 const tableHeader = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.thead(
@@ -68,7 +68,7 @@ const tableHeader = <M>(
 
 const tableBody = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.tbody(
@@ -81,7 +81,7 @@ const tableBody = <M>(
 
 const tableFooter = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.tfoot(
@@ -94,7 +94,7 @@ const tableFooter = <M>(
 
 const tableRow = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.tr(
@@ -107,7 +107,7 @@ const tableRow = <M>(
 
 const tableHead = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.th(
@@ -120,7 +120,7 @@ const tableHead = <M>(
 
 const tableCell = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.td(
@@ -133,7 +133,7 @@ const tableCell = <M>(
 
 const tableCaption = <M>(
   config: StyleConfig,
-  children: ReadonlyArray<Child>,
+  children: readonly Child[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.caption(

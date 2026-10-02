@@ -38,7 +38,7 @@ export type TextareaConfig<M> = Readonly<{
 }>;
 
 /** Styled textarea with label and optional description, built on the
- *  @foldkit/ui Textarea helper. */
+ *  `@foldkit/ui` Textarea helper. */
 export const textarea = <M>(
   config: TextareaConfig<M>,
   h: HtmlBuilder<M>,

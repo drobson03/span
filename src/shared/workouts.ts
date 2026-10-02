@@ -2,14 +2,14 @@ import { Schema } from "effect";
 
 const Count = Schema.Int.check(
   Schema.isGreaterThanOrEqualTo(0),
-  Schema.isLessThanOrEqualTo(10000),
+  Schema.isLessThanOrEqualTo(10_000),
 );
 export const SetData = Schema.Struct({ reps: Count });
 export const ExerciseData = Schema.Struct({
   exerciseTypeId: Schema.NonEmptyString,
   weight: Schema.Number.check(
     Schema.isGreaterThanOrEqualTo(0),
-    Schema.isLessThanOrEqualTo(10000),
+    Schema.isLessThanOrEqualTo(10_000),
   ),
   targetReps: Count,
   notes: Schema.String.check(Schema.isMaxLength(1000)),

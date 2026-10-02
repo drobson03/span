@@ -39,7 +39,7 @@ export type InputConfig<M> = Readonly<{
 }>;
 
 /** Styled text input with label and optional description, built on the
- *  @foldkit/ui Input helper. */
+ *  `@foldkit/ui` Input helper. */
 export const input = <M>(config: InputConfig<M>, h: HtmlBuilder<M>): Html =>
   FoldkitInput.view<M>(
     {

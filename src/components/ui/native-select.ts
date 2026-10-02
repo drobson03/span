@@ -13,7 +13,7 @@ export type NativeSelectSize = (typeof nativeSelectSizeKeys)[number];
 
 /** Upstream NativeSelect select string. */
 export const nativeSelectClass =
-  "border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 dark:hover:bg-input/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-8 w-full min-w-0 appearance-none rounded-lg border bg-transparent py-1 pr-8 pl-2.5 text-sm transition-colors select-none focus-visible:ring-3 aria-invalid:ring-3 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] data-[size=sm]:py-0.5 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed data-disabled:pointer-events-none data-disabled:cursor-not-allowed outline-none disabled:pointer-events-none disabled:cursor-not-allowed";
+  "border-input placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 dark:hover:bg-input/50 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-8 w-full min-w-0 appearance-none rounded-lg border bg-transparent py-1 pr-8 pl-2.5 text-sm transition-colors select-none focus-visible:ring-3 aria-invalid:ring-3 data-[size=sm]:h-7 data-[size=sm]:native-select-small-radius data-[size=sm]:py-0.5 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed data-disabled:pointer-events-none data-disabled:cursor-not-allowed outline-none disabled:pointer-events-none disabled:cursor-not-allowed";
 
 /** Upstream NativeSelect wrapper string. */
 export const nativeSelectWrapperClass =
@@ -22,9 +22,11 @@ export const nativeSelectWrapperClass =
 export const nativeSelectIconClass =
   "text-muted-foreground top-1/2 right-2.5 size-4 -translate-y-1/2 pointer-events-none absolute select-none";
 
-export const nativeSelectOptionClass = "bg-[Canvas] text-[CanvasText]";
+export const nativeSelectOptionClass =
+  "bg-native-canvas text-native-canvas-text";
 
-export const nativeSelectOptGroupClass = "bg-[Canvas] text-[CanvasText]";
+export const nativeSelectOptGroupClass =
+  "bg-native-canvas text-native-canvas-text";
 
 export const nativeSelectLabelClass =
   "px-1.5 py-1 text-xs text-muted-foreground";
@@ -44,7 +46,7 @@ export type NativeSelectConfig<M> = Readonly<{
   name?: string;
   /** `<option>` elements — pass prebuilt markup, e.g.
    *  `cities.map((city) => h.option([], [city]))`. */
-  options: ReadonlyArray<Html | string>;
+  options: readonly (Html | string)[];
   className?: string;
   labelClass?: string;
   descriptionClass?: string;
@@ -163,7 +165,7 @@ export const nativeSelectOption = <M>(
 /** Helper to render an `<optgroup>` with correct data-slot and Canvas colors. */
 export const nativeSelectOptGroup = <M>(
   config: Readonly<{ label: string; className?: string }>,
-  children: ReadonlyArray<Html | string>,
+  children: readonly (Html | string)[],
   h: HtmlBuilder<M>,
 ): Html =>
   h.optgroup(
