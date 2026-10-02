@@ -53,6 +53,58 @@ test("exercise edits preserve decimal weights, set operations, and immutable reo
   expect(initial.draft.exercises).toEqual([]);
 });
 
+test("nested updates copy the changed path and preserve untouched references", () => {
+  const first = update(model(), Message.AddExercise()).model;
+  const initial = update(first, Message.AddExercise()).model;
+  const changed = update(
+    initial,
+    Message.ExerciseField({ index: 0, field: "weight", value: "42.5" }),
+  ).model;
+  expect(changed).not.toBe(initial);
+  expect(changed.draft).not.toBe(initial.draft);
+  expect(changed.draft.exercises).not.toBe(initial.draft.exercises);
+  expect(changed.draft.exercises[0]).not.toBe(initial.draft.exercises[0]);
+  expect(changed.draft.exercises[1]).toBe(initial.draft.exercises[1]);
+  expect(changed.draft.exercises[0]?.sets).toBe(
+    initial.draft.exercises[0]?.sets,
+  );
+  expect(changed.workouts).toBe(initial.workouts);
+  expect(initial.draft.exercises[0]?.weight).toBe("0");
+
+  const reps = update(
+    changed,
+    Message.SetReps({ index: 0, set: 0, value: "6" }),
+  ).model;
+  expect(reps.draft.exercises[0]?.sets).toEqual(["6"]);
+  expect(changed.draft.exercises[0]?.sets).toEqual(["8"]);
+  expect(reps.draft.exercises[1]).toBe(changed.draft.exercises[1]);
+
+  const notes = update(
+    initial,
+    Message.Field({ field: "notes", value: "Session" }),
+  ).model;
+  expect(notes.draft.notes).toBe("Session");
+  expect(notes.draft.exercises).toBe(initial.draft.exercises);
+  expect(initial.draft.notes).toBe("");
+});
+
+test("missing exercise and set targets leave the model unchanged", () => {
+  const initial = update(model(), Message.AddExercise()).model;
+  const messages = [
+    Message.ExerciseField({ index: -1, field: "weight", value: "42.5" }),
+    Message.ExerciseField({ index: 1, field: "weight", value: "42.5" }),
+    Message.AddSet({ index: 1 }),
+    Message.RemoveSet({ index: 1, set: 0 }),
+    Message.SetReps({ index: 1, set: 0, value: "6" }),
+    Message.SetReps({ index: 0, set: -1, value: "6" }),
+    Message.SetReps({ index: 0, set: 1, value: "6" }),
+  ];
+  for (const message of messages) {
+    expect(update(initial, message).model).toBe(initial);
+  }
+  expect(initial.draft.exercises[0]?.sets).toEqual(["8"]);
+});
+
 test("navigation keeps URL state and prevents duplicate submissions", () => {
   const initial = model();
   const changed = update(

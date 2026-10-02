@@ -16,37 +16,7 @@ import { blankDraft, editDraft } from "./draft";
 import { calendarMonth } from "./init";
 import type { Message } from "./messages";
 import type { Model } from "./model";
-
-const updateExercise = (
-  model: Model,
-  message: Extract<
-    Message,
-    { _tag: "ExerciseField" | "AddSet" | "RemoveSet" | "SetReps" }
-  >,
-): Update.Return<Model, Message> => ({
-  model: {
-    ...model,
-    draft: {
-      ...model.draft,
-      exercises: model.draft.exercises.map((e, i) =>
-        i !== message.index
-          ? e
-          : Predicate.isTagged(message, "ExerciseField")
-            ? { ...e, [message.field]: message.value }
-            : {
-                ...e,
-                sets: Predicate.isTagged(message, "AddSet")
-                  ? [...e.sets, e.targetReps]
-                  : Predicate.isTagged(message, "RemoveSet")
-                    ? e.sets.filter((_, i) => i !== message.set)
-                    : e.sets.map((r, i) =>
-                        i === message.set ? message.value : r,
-                      ),
-              },
-      ),
-    },
-  },
-});
+import { draftOptic, exerciseAt, exercisesOptic } from "./optics";
 
 export const update = (
   model: Model,
@@ -136,28 +106,19 @@ export const update = (
         commands: [Navigate({ url: "/workouts" }), LoadData()],
       }),
       Field: (message): Update.Return<Model, Message> => ({
-        model: {
-          ...model,
-          draft: { ...model.draft, [message.field]: message.value },
-        },
+        model: draftOptic.key(message.field).replace(message.value, model),
       }),
       AddExercise: (message): Update.Return<Model, Message> => ({
-        model: {
-          ...model,
-          draft: {
-            ...model.draft,
-            exercises: [
-              ...model.draft.exercises,
-              {
-                exerciseTypeId: model.exerciseTypes[0]?.id ?? "",
-                weight: "0",
-                targetReps: "8",
-                notes: "",
-                sets: ["8"],
-              },
-            ],
+        model: exercisesOptic.modify((exercises) => [
+          ...exercises,
+          {
+            exerciseTypeId: model.exerciseTypes[0]?.id ?? "",
+            weight: "0",
+            targetReps: "8",
+            notes: "",
+            sets: ["8"],
           },
-        },
+        ])(model),
       }),
       SetMetric: (message): Update.Return<Model, Message> => ({
         model: { ...model, metric: message.metric },
@@ -175,18 +136,12 @@ export const update = (
         }
         const [exercise] = exercises.splice(message.index, 1);
         exercises.splice(target, 0, exercise!);
-        return { model: { ...model, draft: { ...model.draft, exercises } } };
+        return { model: exercisesOptic.replace(exercises, model) };
       },
       RemoveExercise: (message): Update.Return<Model, Message> => ({
-        model: {
-          ...model,
-          draft: {
-            ...model.draft,
-            exercises: model.draft.exercises.filter(
-              (_, i) => i !== message.index,
-            ),
-          },
-        },
+        model: exercisesOptic.modify((exercises) =>
+          exercises.filter((_, index) => index !== message.index),
+        )(model),
       }),
       ToggleTag: (message): Update.Return<Model, Message> => ({
         model: {
@@ -242,13 +197,29 @@ export const update = (
         commands: [Navigate({ url: "/login" })],
       }),
       Navigated: (message): Update.Return<Model, Message> => ({ model }),
-      ExerciseField: (message): Update.Return<Model, Message> =>
-        updateExercise(model, message),
-      AddSet: (message): Update.Return<Model, Message> =>
-        updateExercise(model, message),
-      RemoveSet: (message): Update.Return<Model, Message> =>
-        updateExercise(model, message),
-      SetReps: (message): Update.Return<Model, Message> =>
-        updateExercise(model, message),
+      ExerciseField: (message): Update.Return<Model, Message> => ({
+        model: exerciseAt(message.index)
+          .key(message.field)
+          .replace(message.value, model),
+      }),
+      AddSet: (message): Update.Return<Model, Message> => ({
+        model: exerciseAt(message.index).modify((exercise) => ({
+          ...exercise,
+          sets: [...exercise.sets, exercise.targetReps],
+        }))(model),
+      }),
+      RemoveSet: (message): Update.Return<Model, Message> => ({
+        model: exerciseAt(message.index)
+          .key("sets")
+          .modify((sets) => sets.filter((_, index) => index !== message.set))(
+          model,
+        ),
+      }),
+      SetReps: (message): Update.Return<Model, Message> => ({
+        model: exerciseAt(message.index)
+          .key("sets")
+          .at(message.set)
+          .replace(message.value, model),
+      }),
     }),
   );
