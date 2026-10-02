@@ -1,6 +1,4 @@
-import { relations } from "drizzle-orm";
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { workout } from "./workouts";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -16,6 +14,8 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
+  securityRevision: text("security_revision").notNull().default("v1"),
+  enabled: boolean("enabled").notNull().default(true),
   role: text("role"),
   banned: boolean("banned"),
   banReason: text("ban_reason"),
@@ -66,8 +66,3 @@ export const verification = pgTable("verification", {
     () => /* @__PURE__ */ new Date(),
   ),
 });
-
-export const userRelations = relations(user, ({ many }) => ({
-  workouts: many(workout),
-  sessions: many(session),
-}));

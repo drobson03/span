@@ -1,0 +1,9 @@
+allowBuilds:
+  esbuild: true
+  workerd: true
+minimumReleaseAgeExclude:
+  - "@foldkit/*"
+  - "@yielded/*"
+  - foldkit
+patchedDependencies:
+  effect@4.0.0: patches/effect@4.0.0.patch

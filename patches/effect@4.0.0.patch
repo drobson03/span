@@ -1,0 +1,58 @@
+diff --git a/dist/Encoding.d.ts b/dist/Encoding.d.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c5da4bf72adc700cb5c56fcc278e541e7b546da
+--- /dev/null
++++ b/dist/Encoding.d.ts
+@@ -0,0 +1,5 @@
++// Compatibility for Alchemy beta.79's pre-stable Effect import paths.
++// Each implementation remains the stable Effect 4 module.
++export { encode as encodeBase64, decode as decodeBase64, decodeString as decodeBase64String } from "./encoding/Base64.js";
++export { encode as encodeBase64Url, decode as decodeBase64Url, decodeString as decodeBase64UrlString } from "./encoding/Base64Url.js";
++export { encode as encodeHex, decode as decodeHex, decodeString as decodeHexString } from "./encoding/Hex.js";
+diff --git a/dist/Encoding.js b/dist/Encoding.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c5da4bf72adc700cb5c56fcc278e541e7b546da
+--- /dev/null
++++ b/dist/Encoding.js
+@@ -0,0 +1,5 @@
++// Compatibility for Alchemy beta.79's pre-stable Effect import paths.
++// Each implementation remains the stable Effect 4 module.
++export { encode as encodeBase64, decode as decodeBase64, decodeString as decodeBase64String } from "./encoding/Base64.js";
++export { encode as encodeBase64Url, decode as decodeBase64Url, decodeString as decodeBase64UrlString } from "./encoding/Base64Url.js";
++export { encode as encodeHex, decode as decodeHex, decodeString as decodeHexString } from "./encoding/Hex.js";
+diff --git a/package.json b/package.json
+index 8c75c5c360376510cbc3c8ce8af6b210969b2e6f..dca21022f1795edeffe0bd41ac4a0d3911a0d47e 100644
+--- a/package.json
++++ b/package.json
+@@ -57,7 +57,30 @@
+     "./cli/internal/*": null,
+     "./cluster/internal/*": null,
+     "./index": null,
+-    "./*/index": null
++    "./*/index": null,
++    "./unstable/testing": "./dist/testing/index.js",
++    "./unstable/ai": "./dist/ai/index.js",
++    "./unstable/cli": "./dist/cli/index.js",
++    "./unstable/cluster": "./dist/cluster/index.js",
++    "./unstable/devtools": "./dist/devtools/index.js",
++    "./unstable/encoding": "./dist/encoding/index.js",
++    "./unstable/eventlog": "./dist/eventlog/index.js",
++    "./unstable/http": "./dist/http/index.js",
++    "./unstable/http-api": "./dist/http-api/index.js",
++    "./unstable/net": "./dist/net/index.js",
++    "./unstable/observability": "./dist/observability/index.js",
++    "./unstable/persistence": "./dist/persistence/index.js",
++    "./unstable/process": "./dist/process/index.js",
++    "./unstable/reactivity": "./dist/reactivity/index.js",
++    "./unstable/rpc": "./dist/rpc/index.js",
++    "./unstable/schema": "./dist/schema/index.js",
++    "./unstable/socket": "./dist/socket/index.js",
++    "./unstable/sql": "./dist/sql/index.js",
++    "./unstable/workflow": "./dist/workflow/index.js",
++    "./unstable/workers": "./dist/workers/index.js",
++    "./unstable/httpapi": "./dist/http-api/index.js",
++    "./unstable/httpapi/*": "./dist/http-api/*.js",
++    "./unstable/*": "./dist/*.js"
+   },
+   "files": [
+     "src/**/*.ts",

@@ -1,85 +1,72 @@
 # Span
 
-A workout tracking app with analytics and calendar views. Built with TanStack Start (React), Drizzle ORM, and Neon Postgres.
+Workout tracking with a calendar, tag filters, training heatmap, and exercise progression. The app uses [Foldkit](https://foldkit.dev/get-started.md), [Foldcn](https://foldcn.elianiva.com/) components, Effect 4, [Yielded Auth](https://yielded.dev/auth/guide/getting-started/), and Drizzle's native Effect PostgreSQL driver. [Alchemy](https://alchemy.run/getting-started.md) defines the Cloudflare deployment.
 
-## Tech Stack
-
-- **Framework:** [TanStack Start](https://tanstack.com/start) (React 19, Vite, SSR)
-- **Database:** PostgreSQL (Neon) with [Drizzle ORM](https://orm.drizzle.team)
-- **Auth:** [Better Auth](https://www.better-auth.com)
-- **Styling:** Tailwind CSS v4, Radix UI, shadcn/ui
-- **Charts:** Recharts
-- **Validation:** Valibot
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 22.x
-- pnpm
-
-### Setup
+Requires Node.js 22.22.2 or newer and pnpm 12.6.0. PostgreSQL remains the application and authentication database; an existing Neon PostgreSQL connection works too.
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Copy env file and fill in your values
+pnpm install --frozen-lockfile
 cp .env.example .env
+```
 
-# Push the database schema
-pnpm db:push
+Fill in `.env` with your PostgreSQL URL, Google OAuth credentials, and exact application origin. Generate `AUTH_BINDING_SECRET` and `AUTH_TRANSACTION_SECRET` independently:
 
-# Start the dev server
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
+```
+
+Keep these keys stable for each environment. The origin must be HTTPS in production; local development uses `http://localhost:3000`. Register `${AUTH_ORIGIN}/auth/google/callback` as an authorized redirect URI in your Google OAuth client. Configure each environment's callback URL. The previous Better Auth OAuth proxy is replaced by direct Yielded callbacks.
+
+For a **new, empty PostgreSQL database**:
+
+```bash
+pnpm db:migrate
+```
+
+For an **existing Span database** created with the previous `db:push` command, take a backup and run this once:
+
+```bash
+pnpm db:adopt
+```
+
+Adoption checks the existing tables, records the baseline migration, and applies the new auth migration. It preserves user IDs, workout ownership, exercises, and Google identities. Old sessions are retained in their legacy table but are not accepted by Yielded; users sign in again. Subsequent migrations use `pnpm db:migrate`. Adoption refuses databases with existing migration history.
+
+```bash
 pnpm dev
 ```
 
-### Environment Variables
+This starts Vite on port 3000 and the Effect API on port 3001, with `/api` and `/auth` proxied through Vite. `pnpm dev:web` starts only the frontend and needs a separately running API for authentication and workouts.
 
-| Variable                      | Description                                                                                |
-| ----------------------------- | ------------------------------------------------------------------------------------------ |
-| `DATABASE_URL`                | Neon Postgres connection URL                                                               |
-| `BETTER_AUTH_URL`             | This deployment's origin, e.g. `http://localhost:3000` or the exact preview/production URL |
-| `BETTER_AUTH_SECRET`          | Auth secret unique to each environment                                                     |
-| `GOOGLE_CLIENT_ID`            | Shared Google OAuth client ID                                                              |
-| `GOOGLE_CLIENT_SECRET`        | Shared Google OAuth client secret                                                          |
-| `OAUTH_PROXY_PRODUCTION_URL`  | Production origin used for Google callbacks, identical in every environment                |
-| `OAUTH_PROXY_SECRET`          | Dedicated shared proxy secret, at least 32 characters, identical in every environment      |
-| `BETTER_AUTH_TRUSTED_ORIGINS` | Optional comma-separated additional trusted origins, including local and preview URLs      |
+Google sign-in uses durable PostgreSQL flow storage and request-bound cookies. A new Google user completes registration and then signs in again. Existing migrated Google identities sign in to their original user ID. Account ownership is based on Google's verified issuer and subject; email addresses do not link identities.
 
-### Google OAuth proxy
+For a Node production server:
 
-Better Auth reads `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, and `BETTER_AUTH_TRUSTED_ORIGINS` directly from the environment. Only the custom `OAUTH_PROXY_PRODUCTION_URL` and `OAUTH_PROXY_SECRET` variables are passed explicitly to the proxy plugin, so previews can use their own base URL and auth secret while sharing the production callback and proxy encryption key.
-
-The [Better Auth OAuth Proxy](https://better-auth.com/docs/plugins/oauth-proxy.md) routes local and preview sign-ins through production, so Google only needs one registered callback URL. Production sign-ins use the normal flow. The originating environment creates the user and session in its own database.
-
-1. Deploy this configuration to production first. Set `BETTER_AUTH_URL` and `OAUTH_PROXY_PRODUCTION_URL` to the production origin (without `/api/auth`).
-2. In the Google OAuth client, register `https://your-production-domain.example/api/auth/callback/google` as an authorized redirect URI, replacing the example domain with your production domain.
-3. Generate a dedicated proxy secret with `openssl rand -hex 32`. Set it as `OAUTH_PROXY_SECRET` on production, previews, and localhost. Use the same Google client credentials and `OAUTH_PROXY_PRODUCTION_URL` everywhere; keep `BETTER_AUTH_SECRET` separate per environment.
-4. Set `BETTER_AUTH_URL` to each deployment's own origin. For previews, supply the generated preview URL through your deployment environment; for local development, use `http://localhost:3000`.
-5. On production and previews, set `BETTER_AUTH_TRUSTED_ORIGINS` to the allowed local/preview origins (comma-separated without spaces), for example `http://localhost:3000,https://your-preview-domain.example`. Better Auth also supports narrowly scoped wildcard patterns for preview domains you control. Avoid broad shared-host wildcards such as `https://*.vercel.app`. The deployment's own base URL is trusted automatically.
-
-Production must be reachable for local and preview sign-ins. After deploying, verify Google sign-in on production, then on a preview or localhost: Google's callback should go to production, and the completed sign-in should return to the originating environment with a working session.
-
-## Scripts
-
-| Command        | Description               |
-| -------------- | ------------------------- |
-| `pnpm dev`     | Start dev server          |
-| `pnpm build`   | Production build          |
-| `pnpm start`   | Start production server   |
-| `pnpm db:push` | Push schema changes to DB |
-| `pnpm lint`    | Lint with Biome           |
-| `pnpm format`  | Format with Prettier      |
-
-## Project Structure
-
+```bash
+pnpm build
+pnpm start
 ```
-src/
-├── components/    # UI components
-├── hooks/         # React hooks
-├── lib/
-│   ├── client/    # Client-side utilities
-│   └── server/    # Server-side code (auth, db, API functions)
-└── routes/        # TanStack Router file-based routes
+
+For Cloudflare, configure Alchemy's Cloudflare credentials and the same application environment variables, with `AUTH_ORIGIN` set to the deployment's exact HTTPS origin. The PostgreSQL server must be reachable from Workers. Secrets are bound as Cloudflare secrets by `alchemy.run.ts`; the Worker uses the same Effect HTTP routes and PostgreSQL adapter as Node.
+
+```bash
+pnpm dev:cloud
+pnpm deploy
 ```
+
+Alchemy owns the Foldkit asset build, Worker, and Cloudflare deployment state. Database migrations are a separate explicit step before deployment. `pnpm deploy` requires configured Cloudflare credentials; it is not part of building or testing locally.
+
+| Command            | Purpose                                       |
+| ------------------ | --------------------------------------------- |
+| `pnpm check`       | Type-check client, server, and infrastructure |
+| `pnpm lint`        | Check with Biome                              |
+| `pnpm test`        | PostgreSQL integration and application tests  |
+| `pnpm build`       | Build the Foldkit application                 |
+| `pnpm db:generate` | Generate a migration after changing schemas   |
+| `pnpm db:migrate`  | Apply migrations                              |
+| `pnpm db:adopt`    | Adopt an existing Span database once          |
+
+Tests create isolated PGlite databases and exercise PostgreSQL semantics, including the production driver over the PostgreSQL wire protocol. They do not require or change your database or contact Google.
+
+The UI follows Foldkit's model/update/view architecture in `src/main.ts`; copied Foldcn components live in `src/components/ui`. Shared Effect schemas and analytics are in `src/shared`. Server composition, Yielded persistence mappings, migrations, and workout handlers live in `src/server`. `src/worker.ts` adapts the HTTP app to Cloudflare; `src/server/node.ts` runs it on Node.
+
+Effect is pinned to stable 4.0.0. Yielded, Alchemy, and the Drizzle Effect integration are pinned to compatible prerelease versions in `package.json` and the lockfile; update them together after checking their peer requirements. `patches/effect@4.0.0.patch` supplies compatibility aliases for Alchemy beta.79 and its SDKs, which still import the pre-stable `effect/unstable/*` and `effect/Encoding` paths. The aliases use stable Effect 4 implementations. Keep this patch until those dependencies update their imports.
