@@ -1,61 +1,67 @@
-import { useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+} from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/kibo-ui/spinner";
 import WorkoutEntry from "~/components/workouts/entry";
 import WorkoutFilter from "~/components/workouts/filter";
-import { getWorkoutsQueryOptions } from "~/lib/server/functions";
+import {
+  getWorkoutsInfiniteQueryOptions,
+  getWorkoutTagsQueryOptions,
+} from "~/lib/server/functions";
 
 export const Route = createFileRoute("/_authed/workouts/")({
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(getWorkoutsQueryOptions);
+    await Promise.all([
+      context.queryClient.ensureInfiniteQueryData(
+        getWorkoutsInfiniteQueryOptions(),
+      ),
+      context.queryClient.ensureQueryData(getWorkoutTagsQueryOptions),
+    ]);
   },
   component: Workouts,
 });
 
 function Workouts() {
-  const { data: workouts } = useQuery(getWorkoutsQueryOptions);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  // Memoize available tags extraction separately for better performance
-  const availableTags = useMemo(() => {
-    if (!workouts) return [];
-
-    const allTags = new Set<string>();
-    for (const workout of workouts) {
-      if (workout.tags) {
-        workout.tags.forEach((tag) => allTags.add(tag));
-      }
-    }
-
-    return Array.from(allTags).sort();
-  }, [workouts]);
-
-  // Memoize filtered workouts with optimized filtering logic
-  const filteredWorkouts = useMemo(() => {
-    if (!workouts) return [];
-    if (selectedTags.length === 0) return workouts;
-
-    // Convert selectedTags to Set for O(1) lookup
-    const selectedTagsSet = new Set(selectedTags);
-
-    return workouts.filter((workout) => {
-      if (!workout.tags || workout.tags.length === 0) return false;
-
-      // Check if workout has ANY selected tag (OR logic)
-      return workout.tags.some((tag) => selectedTagsSet.has(tag));
+  const { data: availableTags = [] } = useQuery(getWorkoutTagsQueryOptions);
+  const { data, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      ...getWorkoutsInfiniteQueryOptions(selectedTags),
+      placeholderData: keepPreviousData,
     });
-  }, [workouts, selectedTags]);
 
-  // Memoize the tags change handler to prevent unnecessary re-renders
+  const workouts = useMemo(
+    () => data?.pages.flatMap((page) => page.workouts) ?? [],
+    [data],
+  );
+
   const handleTagsChange = useCallback((tags: string[]) => {
-    setSelectedTags(tags);
+    // Sort so the same selection always maps to the same query key
+    setSelectedTags([...tags].sort());
   }, []);
 
-  const remainder = useMemo(
-    () => 5 - ((filteredWorkouts?.length ?? 0) % 5),
-    [filteredWorkouts],
-  );
+  // Load the next page when the sentinel scrolls into view
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        fetchNextPage();
+      }
+    });
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const remainder = 5 - (workouts.length % 5);
 
   return (
     <div className="bg-border -m-4 flex h-full grow flex-col gap-[0.0625rem] overflow-y-auto rounded-b-xl md:grid md:grid-cols-5 md:place-items-stretch">
@@ -72,7 +78,7 @@ function Workouts() {
           onTagsChange={handleTagsChange}
         />
       </div>
-      {filteredWorkouts?.map((workout) => (
+      {workouts.map((workout) => (
         <WorkoutEntry key={workout.id} workout={workout} />
       ))}
       {remainder > 0 ? (
@@ -82,6 +88,20 @@ function Workouts() {
             gridColumn: `span ${remainder} / span ${remainder}`,
           }}
         />
+      ) : null}
+      {hasNextPage ? (
+        <div
+          ref={sentinelRef}
+          className="bg-background flex justify-center p-4 md:col-span-5"
+        >
+          <Button
+            variant="outline"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? <Spinner className="size-4" /> : "Load more"}
+          </Button>
+        </div>
       ) : null}
     </div>
   );

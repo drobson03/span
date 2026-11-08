@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { format, set } from "date-fns";
 import { and, eq, sql } from "drizzle-orm";
@@ -104,17 +104,42 @@ export const getWorkoutsByDateForMonthQueryOptions = (month: Date) =>
     queryFn: async () => await getWorkoutsByDateForMonth({ data: { month } }),
   });
 
-export const getWorkouts = createServerFn({ method: "GET" }).handler(
-  async () => {
+const WORKOUTS_PAGE_SIZE = 25;
+
+export const getWorkoutsPage = createServerFn({ method: "GET" })
+  .validator(
+    object({
+      cursor: optional(string()),
+      tags: optional(array(string())),
+    }),
+  )
+  .handler(async (ctx) => {
     const { user } = await getUser();
 
     if (!user) {
-      return [];
+      return { workouts: [], nextCursor: null };
     }
 
-    return await db.query.workout.findMany({
-      orderBy: (workouts, { desc }) => [desc(workouts.date)],
-      where: (workouts, { eq }) => eq(workouts.userId, user.id),
+    const { cursor, tags } = ctx.data;
+
+    const conditions = [eq(workoutTable.userId, user.id)];
+
+    if (tags && tags.length > 0) {
+      // Use PostgreSQL array overlap operator to match any of the tags
+      conditions.push(sql`${workoutTable.tags} && ${tags}`);
+    }
+
+    if (cursor) {
+      // Keyset pagination on (date, id), relative to the last workout seen
+      conditions.push(
+        sql`(${workoutTable.date}, ${workoutTable.id}) < (select "c"."date", "c"."id" from ${workoutTable} "c" where "c"."id" = ${cursor})`,
+      );
+    }
+
+    const workouts = await db.query.workout.findMany({
+      orderBy: (workouts, { desc }) => [desc(workouts.date), desc(workouts.id)],
+      where: and(...conditions),
+      limit: WORKOUTS_PAGE_SIZE + 1,
       with: {
         exercises: {
           with: {
@@ -123,12 +148,48 @@ export const getWorkouts = createServerFn({ method: "GET" }).handler(
         },
       },
     });
+
+    const hasMore = workouts.length > WORKOUTS_PAGE_SIZE;
+    const page = hasMore ? workouts.slice(0, WORKOUTS_PAGE_SIZE) : workouts;
+
+    return {
+      workouts: page,
+      nextCursor: hasMore ? (page[page.length - 1]?.id ?? null) : null,
+    };
+  });
+
+export const getWorkoutsInfiniteQueryOptions = (tags: string[] = []) =>
+  infiniteQueryOptions({
+    queryKey: ["workouts", "list", { tags }],
+    queryFn: ({ pageParam }) =>
+      getWorkoutsPage({
+        data: { cursor: pageParam, tags: tags.length > 0 ? tags : undefined },
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  });
+
+export const getWorkoutTags = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { user } = await getUser();
+
+    if (!user) {
+      return [];
+    }
+
+    const rows = await db
+      .selectDistinct({ tag: sql<string>`unnest(${workoutTable.tags})` })
+      .from(workoutTable)
+      .where(eq(workoutTable.userId, user.id))
+      .orderBy(sql`1`);
+
+    return rows.map((row) => row.tag);
   },
 );
 
-export const getWorkoutsQueryOptions = queryOptions({
-  queryKey: ["workouts"],
-  queryFn: () => getWorkouts(),
+export const getWorkoutTagsQueryOptions = queryOptions({
+  queryKey: ["workouts", "tags"],
+  queryFn: () => getWorkoutTags(),
 });
 
 export const getExerciseTypes = createServerFn({ method: "GET" }).handler(
@@ -331,45 +392,6 @@ export const getWorkoutQueryOptions = (id: string) =>
     queryKey: ["workouts", id],
     queryFn: async () =>
       (await getWorkout({ data: { id } })) as WorkoutWithRelations | null,
-  });
-
-export const getWorkoutsWithTagFilter = createServerFn({ method: "GET" })
-  .validator(object({ tags: optional(array(string())) }))
-  .handler(async (ctx) => {
-    const { user } = await getUser();
-
-    if (!user) {
-      return [];
-    }
-
-    const { tags } = ctx.data;
-
-    // Base query conditions
-    const conditions = [eq(workoutTable.userId, user.id)];
-
-    // Add tag filtering if tags are provided
-    if (tags && tags.length > 0) {
-      // Use PostgreSQL array overlap operator to match any of the tags
-      conditions.push(sql`${workoutTable.tags} && ${tags}`);
-    }
-
-    return await db.query.workout.findMany({
-      orderBy: (workouts, { desc }) => [desc(workouts.date)],
-      where: and(...conditions),
-      with: {
-        exercises: {
-          with: {
-            exerciseType: true,
-          },
-        },
-      },
-    });
-  });
-
-export const getWorkoutsWithTagFilterQueryOptions = (tags?: string[]) =>
-  queryOptions({
-    queryKey: ["workouts", "filtered", tags],
-    queryFn: () => getWorkoutsWithTagFilter({ data: { tags } }),
   });
 
 export type ExerciseProgressionData = {

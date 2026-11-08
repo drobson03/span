@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { memo } from "react";
 import WorkoutMenu from "~/components/workouts/menu";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
 import { Button } from "../ui/button";
@@ -8,7 +9,7 @@ const kgFormatter = Intl.NumberFormat(undefined, {
   minimumFractionDigits: 1,
 });
 
-export default function WorkoutEntry({
+export default memo(function WorkoutEntry({
   workout,
 }: {
   workout: WorkoutWithRelations;
@@ -62,4 +63,4 @@ export default function WorkoutEntry({
       </ul>
     </div>
   );
-}
+});
