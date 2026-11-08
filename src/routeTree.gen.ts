@@ -9,24 +9,24 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedIndexRouteImport } from './routes/_authed.index'
-import { Route as AuthedWorkoutsRouteImport } from './routes/_authed.workouts'
 import { Route as AuthedAnalyticsRouteImport } from './routes/_authed.analytics'
-import { Route as AuthedWorkoutsIndexRouteImport } from './routes/_authed.workouts.index'
-import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
-import { Route as AuthedWorkoutsNewRouteImport } from './routes/_authed.workouts.new'
+import { Route as AuthedWorkoutsRouteImport } from './routes/_authed.workouts'
 import { Route as AuthedCalendarSplatRouteImport } from './routes/_authed.calendar.$'
+import { Route as AuthedWorkoutsIndexRouteImport } from './routes/_authed.workouts.index'
+import { Route as AuthedWorkoutsNewRouteImport } from './routes/_authed.workouts.new'
+import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as AuthedWorkoutsEditIdRouteImport } from './routes/_authed.workouts.edit.$id'
 
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthedRoute = AuthedRouteImport.update({
-  id: '/_authed',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedIndexRoute = AuthedIndexRouteImport.update({
@@ -34,14 +34,19 @@ const AuthedIndexRoute = AuthedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedAnalyticsRoute = AuthedAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedWorkoutsRoute = AuthedWorkoutsRouteImport.update({
   id: '/workouts',
   path: '/workouts',
   getParentRoute: () => AuthedRoute,
 } as any)
-const AuthedAnalyticsRoute = AuthedAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
+const AuthedCalendarSplatRoute = AuthedCalendarSplatRouteImport.update({
+  id: '/calendar/$',
+  path: '/calendar/$',
   getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedWorkoutsIndexRoute = AuthedWorkoutsIndexRouteImport.update({
@@ -49,20 +54,15 @@ const AuthedWorkoutsIndexRoute = AuthedWorkoutsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthedWorkoutsNewRoute = AuthedWorkoutsNewRouteImport.update({
   id: '/new',
   path: '/new',
   getParentRoute: () => AuthedWorkoutsRoute,
 } as any)
-const AuthedCalendarSplatRoute = AuthedCalendarSplatRouteImport.update({
-  id: '/calendar/$',
-  path: '/calendar/$',
-  getParentRoute: () => AuthedRoute,
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthedWorkoutsEditIdRoute = AuthedWorkoutsEditIdRouteImport.update({
   id: '/edit/$id',
@@ -148,18 +148,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authed': {
       id: '/_authed'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authed/': {
@@ -169,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/analytics': {
+      id: '/_authed/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthedAnalyticsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/workouts': {
       id: '/_authed/workouts'
       path: '/workouts'
@@ -176,11 +183,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedWorkoutsRouteImport
       parentRoute: typeof AuthedRoute
     }
-    '/_authed/analytics': {
-      id: '/_authed/analytics'
-      path: '/analytics'
-      fullPath: '/analytics'
-      preLoaderRoute: typeof AuthedAnalyticsRouteImport
+    '/_authed/calendar/$': {
+      id: '/_authed/calendar/$'
+      path: '/calendar/$'
+      fullPath: '/calendar/$'
+      preLoaderRoute: typeof AuthedCalendarSplatRouteImport
       parentRoute: typeof AuthedRoute
     }
     '/_authed/workouts/': {
@@ -190,13 +197,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedWorkoutsIndexRouteImport
       parentRoute: typeof AuthedWorkoutsRoute
     }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authed/workouts/new': {
       id: '/_authed/workouts/new'
       path: '/new'
@@ -204,12 +204,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedWorkoutsNewRouteImport
       parentRoute: typeof AuthedWorkoutsRoute
     }
-    '/_authed/calendar/$': {
-      id: '/_authed/calendar/$'
-      path: '/calendar/$'
-      fullPath: '/calendar/$'
-      preLoaderRoute: typeof AuthedCalendarSplatRouteImport
-      parentRoute: typeof AuthedRoute
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authed/workouts/edit/$id': {
       id: '/_authed/workouts/edit/$id'

@@ -141,7 +141,7 @@ export default function ExerciseCharts() {
                   content={
                     <ChartTooltipContent
                       labelFormatter={(value) =>
-                        format(new Date(value), "MMM d, yyyy")
+                        format(new Date(String(value)), "MMM d, yyyy")
                       }
                     />
                   }
