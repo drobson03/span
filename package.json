@@ -1,6 +1,7 @@
 {
   "name": "span",
   "type": "module",
+  "packageManager": "pnpm@12.18.0",
   "scripts": {
     "db:push": "drizzle-kit push",
     "dev": "vite dev",
