@@ -42,8 +42,8 @@ function Workouts() {
     return workouts.filter((workout) => {
       if (!workout.tags || workout.tags.length === 0) return false;
 
-      // Check if workout has ALL selected tags (AND logic)
-      return selectedTags.every((tag) => workout.tags!.includes(tag));
+      // Check if workout has ANY selected tag (OR logic)
+      return workout.tags.some((tag) => selectedTagsSet.has(tag));
     });
   }, [workouts, selectedTags]);
 

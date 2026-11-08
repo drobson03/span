@@ -99,7 +99,7 @@ export default function WorkoutFilter({
       {selectedTags.length > 0 && (
         <div className="text-muted-foreground text-xs">
           Showing workouts with:{" "}
-          <span className="capitalize">{selectedTags.join(", ")}</span>
+          <span className="capitalize">{selectedTags.join(" or ")}</span>
         </div>
       )}
     </div>

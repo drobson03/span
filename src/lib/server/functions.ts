@@ -352,8 +352,8 @@ export const getWorkoutsWithTagFilter = createServerFn({ method: "GET" })
 
     // Add tag filtering if tags are provided
     if (tags && tags.length > 0) {
-      // Use PostgreSQL array contains operator for efficient tag filtering
-      conditions.push(sql`${workoutTable.tags} @> ${tags}`);
+      // Use PostgreSQL array overlap operator to match any of the tags
+      conditions.push(sql`${workoutTable.tags} && ${tags}`);
     }
 
     return await db.query.workout.findMany({
