@@ -7,3 +7,6 @@ minimumReleaseAgeExclude:
   - '@tanstack/router-utils@1.163.0'
   - '@tanstack/start-plugin-core@1.171.56'
   - seroval@1.7.10
+
+allowBuilds:
+  esbuild: true
