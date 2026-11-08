@@ -15,7 +15,7 @@ A workout tracking app with analytics and calendar views. Built with TanStack St
 
 ### Prerequisites
 
-- Node.js 22.x
+- Node.js 24.x
 - pnpm
 
 ### Setup
