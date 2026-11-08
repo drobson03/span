@@ -104,34 +104,31 @@ export const getWorkoutsByDateForMonthQueryOptions = (month: Date) =>
     queryFn: async () => await getWorkoutsByDateForMonth({ data: { month } }),
   });
 
-async function getWorkoutsFn() {
-  const { user } = await getUser();
+export const getWorkouts = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const { user } = await getUser();
 
-  if (!user) {
-    return [];
-  }
+    if (!user) {
+      return [];
+    }
 
-  return await db.query.workout.findMany({
-    orderBy: (workouts, { desc }) => [desc(workouts.date)],
-    where: (workouts, { eq }) => eq(workouts.userId, user.id),
-    with: {
-      exercises: {
-        with: {
-          exerciseType: true,
+    return await db.query.workout.findMany({
+      orderBy: (workouts, { desc }) => [desc(workouts.date)],
+      where: (workouts, { eq }) => eq(workouts.userId, user.id),
+      with: {
+        exercises: {
+          with: {
+            exerciseType: true,
+          },
         },
       },
-    },
-  });
-}
-
-export const getWorkouts = createServerFn({ method: "GET" }).handler(
-  getWorkoutsFn,
+    });
+  },
 );
 
 export const getWorkoutsQueryOptions = queryOptions({
   queryKey: ["workouts"],
-  queryFn: async () =>
-    (await getWorkouts()) as Awaited<ReturnType<typeof getWorkoutsFn>>,
+  queryFn: () => getWorkouts(),
 });
 
 export const getExerciseTypes = createServerFn({ method: "GET" }).handler(
