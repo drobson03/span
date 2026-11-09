@@ -1,0 +1,106 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "8518f328-7687-4449-9699-8133dfb72f7a",
+  "prevIds": [
+    "cbab70c1-dff3-4dd3-808f-779a4b0eabe0"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "exercise",
+        "target_seconds"
+      ],
+      "writes": [
+        "s|col|public.exercise.target_seconds",
+        "n|col|public.exercise.target_seconds",
+        "e|col|public.exercise.target_seconds"
+      ],
+      "reads": [
+        "n|tbl|public.exercise",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "exercise_type",
+        "measurement"
+      ],
+      "writes": [
+        "s|col|public.exercise_type.measurement",
+        "n|col|public.exercise_type.measurement",
+        "e|col|public.exercise_type.measurement"
+      ],
+      "reads": [
+        "n|tbl|public.exercise_type",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "exercise",
+        "target_reps"
+      ],
+      "writes": [
+        "s|colprop|public.exercise.target_reps.notNull"
+      ],
+      "reads": [
+        "n|tbl|public.exercise",
+        "n|sch|public",
+        "n|col|public.exercise.target_reps"
+      ],
+      "sqlHash": "e4e8b5ba1125f7d3"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "exercise",
+        "name": "target_seconds",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "exercise_type",
+        "name": "measurement",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'reps'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"exercise\",\"target_reps\"]",
+      "set": {
+        "notNull": false
+      }
+    }
+  ]
+}
