@@ -1,7 +1,7 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { format, set } from "date-fns";
-import { and, eq, sql } from "drizzle-orm";
+import { and, EmptyFilter, eq, sql } from "drizzle-orm";
 import {
   array,
   date,
@@ -119,13 +119,13 @@ export const getWorkoutsPage = createServerFn({ method: "GET" })
       where: {
         userId: user.id,
         // Match any of the tags
-        tags: tags && tags.length > 0 ? { arrayOverlaps: tags } : undefined,
+        tags: tags && tags.length > 0 ? { arrayOverlaps: tags } : EmptyFilter,
         // Keyset pagination on (date, id), relative to the last workout seen.
         // `RAW` gets the query's alias for the table, not `workoutTable`.
         RAW: cursor
           ? (workouts) =>
               sql`(${workouts.date}, ${workouts.id}) < (select "c"."date", "c"."id" from ${workoutTable} "c" where "c"."id" = ${cursor})`
-          : undefined,
+          : EmptyFilter,
       },
       limit: WORKOUTS_PAGE_SIZE + 1,
       with: {
@@ -435,7 +435,10 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
         const existingEntry = progression.data.find((d) => d.date === dateStr);
 
         if (existingEntry) {
-          existingEntry.maxWeight = Math.max(existingEntry.maxWeight, ex.weight);
+          existingEntry.maxWeight = Math.max(
+            existingEntry.maxWeight,
+            ex.weight,
+          );
           existingEntry.totalVolume += totalVolume;
           existingEntry.totalReps += totalReps;
           existingEntry.sets += ex.sets.length;
