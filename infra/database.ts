@@ -2,13 +2,11 @@ import * as Cloudflare from "@alchemy.run/cloudflare";
 import * as Neon from "@alchemy.run/neon";
 import * as Alchemy from "alchemy";
 import * as RemovalPolicy from "alchemy/RemovalPolicy";
-import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 
 export const PRODUCTION_STAGE = "prod";
 
-/** Stages deployed by CI for pull requests (`pr-<number>`). */
-export const isPreviewStage = (stage: string) => stage.startsWith("pr-");
+const isPreviewStage = (stage: string) => stage.startsWith("pr-");
 
 // drizzle-kit output (`pnpm db:generate`), applied by Alchemy on deploy.
 const MIGRATIONS = "./migrations";
@@ -29,7 +27,7 @@ export const Database = Effect.gen(function* () {
 
   if (stage === PRODUCTION_STAGE) {
     const project = yield* Neon.Project("Database", {
-      name: yield* Config.String("NEON_PROJECT_NAME").pipe(Effect.orDie),
+      name: "span",
       historyRetentionSeconds: HISTORY_RETENTION_SECONDS,
       migrations: MIGRATIONS,
     }).pipe(RemovalPolicy.retain());

@@ -10,9 +10,7 @@ function createAuth() {
   return betterAuth({
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
-    trustedOrigins: (env.BETTER_AUTH_TRUSTED_ORIGINS ?? "")
-      .split(",")
-      .filter(Boolean),
+    trustedOrigins: env.BETTER_AUTH_TRUSTED_ORIGINS.split(","),
     emailAndPassword: {
       enabled: false,
     },
