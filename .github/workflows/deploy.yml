@@ -20,19 +20,13 @@ jobs:
     # Restrict this environment to `main` in the repo settings.
     environment:
       name: production
-      url: ${{ vars.BETTER_AUTH_URL }}
+      url: https://span.darcyr.dev
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-      NEON_PROJECT_NAME: ${{ vars.NEON_PROJECT_NAME }}
-      BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
-      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-      BETTER_AUTH_TRUSTED_ORIGINS: ${{ vars.BETTER_AUTH_TRUSTED_ORIGINS }}
       GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      OAUTH_PROXY_PRODUCTION_URL: ${{ vars.OAUTH_PROXY_PRODUCTION_URL }}
-      OAUTH_PROXY_SECRET: ${{ secrets.OAUTH_PROXY_SECRET }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -51,16 +45,13 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: preview
-      url: https://span-pr-${{ github.event.number }}.${{ vars.WORKERS_SUBDOMAIN }}.workers.dev
+      url: https://span-pr-${{ github.event.number }}.darcyr.dev
     env: &preview-env
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-      WORKERS_SUBDOMAIN: ${{ vars.WORKERS_SUBDOMAIN }}
       GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
       GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      OAUTH_PROXY_PRODUCTION_URL: ${{ vars.OAUTH_PROXY_PRODUCTION_URL }}
-      OAUTH_PROXY_SECRET: ${{ secrets.OAUTH_PROXY_SECRET }}
     steps:
       - uses: actions/checkout@v7
         with:

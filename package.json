@@ -5,7 +5,7 @@
   "scripts": {
     "db:generate": "drizzle-kit generate",
     "dev": "alchemy dev",
-    "deploy:prod": "alchemy deploy --stage prod --env-file .env.prod",
+    "deploy:prod": "alchemy deploy --stage prod",
     "format": "prettier --write ./src --cache",
     "lint": "biome check --write ."
   },
