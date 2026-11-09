@@ -3,9 +3,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { format, set } from "date-fns";
 import { and, eq, sql } from "drizzle-orm";
 import {
-  type InferInput,
   array,
   date,
+  type InferInput,
   literal,
   maxLength,
   minValue,
@@ -19,9 +19,9 @@ import {
 import { getUser } from "~/lib/server/auth/functions";
 import { db } from "~/lib/server/db";
 import {
+  exercise,
   type Workout,
   type WorkoutWithRelations,
-  exercise,
   workout as workoutTable,
 } from "~/lib/server/db/schema";
 
@@ -82,6 +82,7 @@ export const getWorkoutsByDateForMonth = createServerFn({
         orderBy: { date: "desc" },
         where: {
           userId: user.id,
+          // biome-ignore lint/correctness/noComponentHookFactories: Drizzle's `RAW` filter, not a component.
           RAW: (workouts) =>
             sql`to_char(${workouts.date}, 'YYYY-MM') = ${format(monthDate, "yyyy-MM")}`,
         },
@@ -113,23 +114,19 @@ export const getWorkoutsPage = createServerFn({ method: "GET" })
 
     const { cursor, tags } = ctx.data;
 
-    const conditions = [eq(workoutTable.userId, user.id)];
-
-    if (tags && tags.length > 0) {
-      // Use PostgreSQL array overlap operator to match any of the tags
-      conditions.push(sql`${workoutTable.tags} && ${tags}`);
-    }
-
-    if (cursor) {
-      // Keyset pagination on (date, id), relative to the last workout seen
-      conditions.push(
-        sql`(${workoutTable.date}, ${workoutTable.id}) < (select "c"."date", "c"."id" from ${workoutTable} "c" where "c"."id" = ${cursor})`,
-      );
-    }
-
     const workouts = await db.query.workout.findMany({
       orderBy: { date: "desc", id: "desc" },
-      where: { RAW: and(...conditions) },
+      where: {
+        userId: user.id,
+        // Match any of the tags
+        tags: tags && tags.length > 0 ? { arrayOverlaps: tags } : undefined,
+        // Keyset pagination on (date, id), relative to the last workout seen.
+        // `RAW` gets the query's alias for the table, not `workoutTable`.
+        RAW: cursor
+          ? (workouts) =>
+              sql`(${workouts.date}, ${workouts.id}) < (select "c"."date", "c"."id" from ${workoutTable} "c" where "c"."id" = ${cursor})`
+          : undefined,
+      },
       limit: WORKOUTS_PAGE_SIZE + 1,
       with: {
         exercises: {
