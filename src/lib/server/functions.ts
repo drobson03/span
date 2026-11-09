@@ -53,13 +53,8 @@ export const getWorkoutsByDate = createServerFn({ method: "GET" })
 
     return reduceWorkoutsByDate(
       await db.query.workout.findMany({
-        orderBy: (workouts, { desc }) => [desc(workouts.date)],
-        where: (workouts, { gte, eq, and }) => {
-          return and(
-            eq(workouts.userId, user.id),
-            gte(workouts.date, startDate),
-          );
-        },
+        orderBy: { date: "desc" },
+        where: { userId: user.id, date: { gte: startDate } },
       }),
     );
   });
@@ -84,15 +79,11 @@ export const getWorkoutsByDateForMonth = createServerFn({
 
     return reduceWorkoutsByDate(
       await db.query.workout.findMany({
-        orderBy: (workouts, { desc }) => [desc(workouts.date)],
-        where: (workouts, { and, eq, sql }) => {
-          return and(
-            eq(workouts.userId, user.id),
-            eq(
-              sql`to_char(${workouts.date}, 'YYYY-MM')`,
-              format(monthDate, "yyyy-MM"),
-            ),
-          );
+        orderBy: { date: "desc" },
+        where: {
+          userId: user.id,
+          RAW: (workouts) =>
+            sql`to_char(${workouts.date}, 'YYYY-MM') = ${format(monthDate, "yyyy-MM")}`,
         },
       }),
     );
@@ -137,8 +128,8 @@ export const getWorkoutsPage = createServerFn({ method: "GET" })
     }
 
     const workouts = await db.query.workout.findMany({
-      orderBy: (workouts, { desc }) => [desc(workouts.date), desc(workouts.id)],
-      where: and(...conditions),
+      orderBy: { date: "desc", id: "desc" },
+      where: { RAW: and(...conditions) },
       limit: WORKOUTS_PAGE_SIZE + 1,
       with: {
         exercises: {
@@ -195,7 +186,7 @@ export const getWorkoutTagsQueryOptions = queryOptions({
 export const getExerciseTypes = createServerFn({ method: "GET" }).handler(
   async () => {
     return await db.query.exerciseType.findMany({
-      orderBy: (exerciseTypes, { asc }) => [asc(exerciseTypes.name)],
+      orderBy: { name: "asc" },
     });
   },
 );
@@ -310,8 +301,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
     }
 
     const exists = await db.query.workout.findFirst({
-      where: (workouts, { eq, and }) =>
-        and(eq(workouts.id, workout.id), eq(workouts.userId, user.id)),
+      where: { id: workout.id, userId: user.id },
     });
 
     if (!exists) {
@@ -373,8 +363,7 @@ export const getWorkout = createServerFn({ method: "GET" })
     }
 
     const workout = await db.query.workout.findFirst({
-      where: (workouts, { eq, and }) =>
-        and(eq(workouts.id, ctx.data.id), eq(workouts.userId, user.id)),
+      where: { id: ctx.data.id, userId: user.id },
       with: {
         exercises: {
           with: {
@@ -417,8 +406,8 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
     }
 
     const workouts = await db.query.workout.findMany({
-      orderBy: (workouts, { asc }) => [asc(workouts.date)],
-      where: (workouts, { eq }) => eq(workouts.userId, user.id),
+      orderBy: { date: "asc" },
+      where: { userId: user.id },
       with: {
         exercises: {
           with: {

@@ -1,0 +1,13 @@
+name: Setup
+description: Install pnpm, Node.js and dependencies.
+runs:
+  using: composite
+  steps:
+    # Version comes from `packageManager` in package.json.
+    - uses: pnpm/action-setup@v6
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 24
+        cache: pnpm
+    - run: pnpm install --frozen-lockfile
+      shell: bash

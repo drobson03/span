@@ -1,11 +1,10 @@
-import { minLength, object, parse, pipe, string, url } from "valibot";
+import * as cf from "cloudflare:workers";
+import type { WebsiteEnv } from "../../../alchemy.run.ts";
 
-const EnvSchema = object({
-  OAUTH_PROXY_PRODUCTION_URL: pipe(string(), url()),
-  OAUTH_PROXY_SECRET: pipe(string(), minLength(32)),
-  DATABASE_URL: string(),
-  GOOGLE_CLIENT_ID: string(),
-  GOOGLE_CLIENT_SECRET: string(),
+// TanStack Start's dev server evaluates modules outside the Worker request
+// context, so defer reading `cloudflare:workers` until a property is accessed.
+export const env = new Proxy({} as WebsiteEnv, {
+  get(_, prop) {
+    return cf.env[prop as keyof typeof cf.env];
+  },
 });
-
-export const env = parse(EnvSchema, process.env);

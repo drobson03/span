@@ -17,8 +17,10 @@
 
     "module": "preserve",
     "noEmit": true,
+    "allowImportingTsExtensions": true,
 
     "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["vite/client", "@cloudflare/workers-types"],
     "jsx": "react-jsx",
 
     "paths": {
