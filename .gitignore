@@ -5,6 +5,8 @@ yarn.lock
 .DS_Store
 .cache
 .env
+.env.*
+!.env.example
 .vercel
 .output
 .vinxi
@@ -14,3 +16,7 @@ yarn.lock
 /server/build
 /public/build
 .vinxi
+
+.alchemy
+.tanstack
+dist

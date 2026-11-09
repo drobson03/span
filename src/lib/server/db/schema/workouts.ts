@@ -1,4 +1,3 @@
-import { relations } from "drizzle-orm";
 import {
   index,
   integer,
@@ -45,14 +44,6 @@ export type Workout = typeof workout.$inferSelect;
 
 export type InsertWorkout = typeof workout.$inferInsert;
 
-export const workoutRelations = relations(workout, ({ one, many }) => ({
-  user: one(user, {
-    fields: [workout.userId],
-    references: [user.id],
-  }),
-  exercises: many(exercise),
-}));
-
 export const exerciseType = pgTable("exercise_type", {
   id: varchar("id", { length: 21 })
     .primaryKey()
@@ -63,10 +54,6 @@ export const exerciseType = pgTable("exercise_type", {
 export type ExerciseType = typeof exerciseType.$inferSelect;
 
 export type InsertExerciseType = typeof exerciseType.$inferInsert;
-
-export const exerciseTypeRelations = relations(exerciseType, ({ many }) => ({
-  exercises: many(exercise),
-}));
 
 export type WorkoutSet = {
   reps: number;
@@ -104,17 +91,6 @@ export const exercise = pgTable(
 export type Exercise = typeof exercise.$inferSelect;
 
 export type InsertExercise = typeof exercise.$inferInsert;
-
-export const exerciseRelations = relations(exercise, ({ one }) => ({
-  workout: one(workout, {
-    fields: [exercise.workoutId],
-    references: [workout.id],
-  }),
-  exerciseType: one(exerciseType, {
-    fields: [exercise.exerciseTypeId],
-    references: [exerciseType.id],
-  }),
-}));
 
 export type ExerciseWithRelations = Exercise & {
   exerciseType: ExerciseType;
