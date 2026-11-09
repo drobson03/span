@@ -3,14 +3,11 @@ import { format } from "date-fns";
 import { useState } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { getExerciseProgressionQueryOptions } from "~/lib/server/functions";
-import { cn } from "~/lib/utils";
+import type { ExerciseMeasurement } from "~/lib/server/db/schema";
+import { cn, formatDuration } from "~/lib/utils";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "./ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "./ui/chart";
 import {
   Combobox,
   ComboboxContent,
@@ -22,13 +19,23 @@ import {
   ComboboxTrigger,
 } from "./ui/kibo-ui/combobox";
 
-type MetricType = "maxWeight" | "totalVolume" | "totalReps";
+type MetricType =
+  "maxWeight" | "totalVolume" | "totalReps" | "longestSet" | "totalSeconds";
 
 const metricLabels: Record<MetricType, string> = {
   maxWeight: "Max Weight",
   totalVolume: "Total Volume",
   totalReps: "Total Reps",
+  longestSet: "Longest Hold",
+  totalSeconds: "Total Time",
 };
+
+const metricsByMeasurement = {
+  reps: ["maxWeight", "totalVolume", "totalReps"],
+  time: ["maxWeight", "longestSet", "totalSeconds"],
+} as const satisfies Record<ExerciseMeasurement, readonly MetricType[]>;
+
+const durationMetrics = new Set<MetricType>(["longestSet", "totalSeconds"]);
 
 export default function ExerciseCharts() {
   const [metric, setMetric] = useState<MetricType>("maxWeight");
@@ -36,13 +43,20 @@ export default function ExerciseCharts() {
     null,
   );
 
-  const { data: progressions } = useQuery(
-    getExerciseProgressionQueryOptions(),
-  );
+  const { data: progressions } = useQuery(getExerciseProgressionQueryOptions());
 
   const selectedProgression =
     progressions?.find((p) => p.exerciseTypeId === selectedExerciseId) ??
     progressions?.[0];
+
+  const availableMetrics =
+    metricsByMeasurement[selectedProgression?.measurement ?? "reps"];
+  // Fall back when switching to an exercise that doesn't track the metric
+  const activeMetric: MetricType = (
+    availableMetrics as readonly MetricType[]
+  ).includes(metric)
+    ? metric
+    : availableMetrics[0];
 
   if (!progressions || progressions.length === 0) {
     return (
@@ -63,15 +77,15 @@ export default function ExerciseCharts() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="font-semibold text-lg">Exercise Progress</h2>
+        <h2 className="text-lg font-semibold">Exercise Progress</h2>
         <div className="flex gap-1">
-          {(["maxWeight", "totalVolume", "totalReps"] as const).map((m) => (
+          {availableMetrics.map((m) => (
             <Button
               key={m}
               size="sm"
-              variant={metric === m ? "default" : "outline"}
+              variant={activeMetric === m ? "default" : "outline"}
               onClick={() => setMetric(m)}
-              className={cn(metric !== m && "text-muted-foreground")}
+              className={cn(activeMetric !== m && "text-muted-foreground")}
             >
               {metricLabels[m]}
             </Button>
@@ -99,7 +113,10 @@ export default function ExerciseCharts() {
                 <ComboboxEmpty />
                 <ComboboxGroup>
                   {progressions.map((p) => (
-                    <ComboboxItem key={p.exerciseTypeId} value={p.exerciseTypeId}>
+                    <ComboboxItem
+                      key={p.exerciseTypeId}
+                      value={p.exerciseTypeId}
+                    >
                       {p.exerciseTypeName}
                     </ComboboxItem>
                   ))}
@@ -112,8 +129,10 @@ export default function ExerciseCharts() {
           {selectedProgression && selectedProgression.data.length >= 2 ? (
             <ChartContainer
               config={{
-                [metric]: {
-                  label: metricLabels[metric],
+                [activeMetric]: {
+                  label: durationMetrics.has(activeMetric)
+                    ? `${metricLabels[activeMetric]} (s)`
+                    : metricLabels[activeMetric],
                   color: "hsl(var(--primary))",
                 },
               }}
@@ -136,6 +155,11 @@ export default function ExerciseCharts() {
                   axisLine={false}
                   tickMargin={8}
                   width={50}
+                  tickFormatter={
+                    durationMetrics.has(activeMetric)
+                      ? (value) => formatDuration(Number(value))
+                      : undefined
+                  }
                 />
                 <ChartTooltip
                   content={
@@ -148,8 +172,8 @@ export default function ExerciseCharts() {
                 />
                 <Line
                   type="monotone"
-                  dataKey={metric}
-                  stroke="var(--color-maxWeight)"
+                  dataKey={activeMetric}
+                  stroke={`var(--color-${activeMetric})`}
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   activeDot={{ r: 5 }}

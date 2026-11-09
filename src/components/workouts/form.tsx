@@ -10,13 +10,17 @@ import {
 import { useState, useMemo, useCallback, useRef } from "react";
 import * as v from "valibot";
 import { useAppForm } from "~/hooks/form";
-import type { WorkoutWithRelations } from "~/lib/server/db/schema";
+import type {
+  ExerciseMeasurement,
+  WorkoutWithRelations,
+} from "~/lib/server/db/schema";
 import {
   type WorkoutFormData,
   createWorkout,
   getExerciseTypesQueryOptions,
   updateWorkout,
 } from "~/lib/server/functions";
+import { cn, formatDuration, getSetValue } from "~/lib/utils";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/kibo-ui/spinner";
 import { Label } from "../ui/label";
@@ -41,16 +45,28 @@ const formSchema = v.object({
     v.object({
       exerciseTypeId: v.string(),
       weight: v.number("Please enter a valid number"),
-      targetReps: v.number("Please enter a valid number"),
+      // Reps or seconds, depending on the exercise type's measurement
+      target: v.number("Please enter a valid number"),
       notes: v.pipe(v.string(), v.maxLength(1000)),
       sets: v.array(
-        v.object({ reps: v.number("Please enter a valid number") }),
+        v.object({ value: v.number("Please enter a valid number") }),
       ),
     }),
   ),
 });
 
 type FormData = v.InferOutput<typeof formSchema>;
+
+const defaultTargets: Record<ExerciseMeasurement, number> = {
+  reps: 8,
+  time: 30,
+};
+
+// Timed sets are adjusted in coarser steps than reps
+const setSteps: Record<ExerciseMeasurement, number> = {
+  reps: 1,
+  time: 5,
+};
 
 const defaultTags = [
   { id: "push", label: "Push" },
@@ -122,6 +138,20 @@ export default function WorkoutForm({
 
   const { data: exerciseTypes } = useQuery(getExerciseTypesQueryOptions);
 
+  const measurementByExerciseTypeId = useMemo(
+    () =>
+      new Map(
+        exerciseTypes?.map((exerciseType) => [
+          exerciseType.id,
+          exerciseType.measurement,
+        ]),
+      ),
+    [exerciseTypes],
+  );
+
+  const getMeasurement = (exerciseTypeId: string): ExerciseMeasurement =>
+    measurementByExerciseTypeId.get(exerciseTypeId) ?? "reps";
+
   const form = useAppForm({
     defaultValues: {
       datetime: workout?.date ?? new Date(),
@@ -131,10 +161,10 @@ export default function WorkoutForm({
         workout?.exercises.map((exercise) => ({
           weight: exercise.weight,
           notes: exercise.notes ?? "",
-          targetReps: exercise.targetReps,
+          target: exercise.targetReps ?? exercise.targetSeconds ?? 0,
           exerciseTypeId: exercise.exerciseTypeId,
           sets: exercise.sets.map((set) => ({
-            reps: set.reps,
+            value: getSetValue(set),
           })),
         })) ?? [],
     } as FormData satisfies FormData,
@@ -306,7 +336,22 @@ export default function WorkoutForm({
                     key={i}
                     className="bg-background flex flex-col gap-2 p-4 md:px-6"
                   >
-                    <form.AppField name={`exercises[${i}].exerciseTypeId`}>
+                    <form.AppField
+                      name={`exercises[${i}].exerciseTypeId`}
+                      listeners={{
+                        onChange: ({ value }) => {
+                          if (
+                            form.getFieldValue(`exercises[${i}].sets`)
+                              .length === 0
+                          ) {
+                            form.setFieldValue(
+                              `exercises[${i}].target`,
+                              defaultTargets[getMeasurement(value)],
+                            );
+                          }
+                        },
+                      }}
+                    >
                       {(field) => (
                         <field.ComboboxField
                           label="Exercise"
@@ -340,92 +385,139 @@ export default function WorkoutForm({
                         </>
                       )}
                     </form.Field> */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <form.AppField name={`exercises[${i}].weight`}>
-                        {(field) => (
-                          <field.InputField
-                            label="Weight"
-                            type="number"
-                            step={0.01}
-                          />
-                        )}
-                      </form.AppField>
-                      <form.AppField name={`exercises[${i}].targetReps`}>
-                        {(field) => (
-                          <field.InputField
-                            label="Target Reps"
-                            type="number"
-                            step={1}
-                            min={0}
-                          />
-                        )}
-                      </form.AppField>
-                    </div>
-                    <form.AppField name={`exercises[${i}].notes`}>
-                      {(field) => (
-                        <field.TextareaField label="Notes" rows={3} />
-                      )}
-                    </form.AppField>
-                    <form.AppField name={`exercises[${i}].sets`} mode="array">
-                      {(setsArrayField) => (
-                        <div className="flex flex-col gap-1">
-                          <Label htmlFor={setsArrayField.name}>Sets</Label>
-                          <div className="grid grid-cols-7 gap-2 lg:grid-cols-10">
-                            {setsArrayField.state.value.length > 0
-                              ? setsArrayField.state.value.map((_, j) => (
-                                  <form.Field
-                                    // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
-                                    key={j}
-                                    name={`exercises[${i}].sets[${j}].reps`}
-                                  >
-                                    {(setField) => (
-                                      <Button
-                                        variant="outline"
-                                        size="icon"
-                                        type="button"
-                                        id={setField.name}
-                                        name={setField.name}
-                                        onClick={() =>
-                                          setField.state.value === 1
-                                            ? setsArrayField.removeValue(j)
-                                            : setField.handleChange(
-                                                setField.state.value - 1,
-                                              )
-                                        }
-                                        onContextMenu={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          setField.handleChange(
-                                            setField.state.value + 1,
-                                          );
-                                        }}
-                                      >
-                                        {setField.state.value}
-                                      </Button>
-                                    )}
-                                  </form.Field>
-                                ))
-                              : null}
-                            <form.AppField name={`exercises[${i}].targetReps`}>
-                              {(targetRepsField) => (
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() =>
-                                    setsArrayField.pushValue({
-                                      reps: targetRepsField.state.value,
-                                    })
-                                  }
-                                  type="button"
-                                >
-                                  +
-                                </Button>
+                    <form.Subscribe
+                      selector={(state) =>
+                        getMeasurement(
+                          state.values.exercises[i]?.exerciseTypeId ?? "",
+                        )
+                      }
+                    >
+                      {(measurement: ExerciseMeasurement) => {
+                        const timed = measurement === "time";
+                        const step = setSteps[measurement];
+                        const formatSet = (value: number) =>
+                          timed ? formatDuration(value) : value;
+
+                        return (
+                          <>
+                            <div className="grid grid-cols-2 gap-4">
+                              <form.AppField name={`exercises[${i}].weight`}>
+                                {(field) => (
+                                  <field.InputField
+                                    label={timed ? "Added Weight" : "Weight"}
+                                    type="number"
+                                    step={0.01}
+                                  />
+                                )}
+                              </form.AppField>
+                              <form.AppField name={`exercises[${i}].target`}>
+                                {(field) => (
+                                  <field.InputField
+                                    label={
+                                      timed ? "Target Time (s)" : "Target Reps"
+                                    }
+                                    type="number"
+                                    step={1}
+                                    min={0}
+                                  />
+                                )}
+                              </form.AppField>
+                            </div>
+                            <form.AppField name={`exercises[${i}].notes`}>
+                              {(field) => (
+                                <field.TextareaField label="Notes" rows={3} />
                               )}
                             </form.AppField>
-                          </div>
-                        </div>
-                      )}
-                    </form.AppField>
+                            <form.AppField
+                              name={`exercises[${i}].sets`}
+                              mode="array"
+                            >
+                              {(setsArrayField) => (
+                                <div className="flex flex-col gap-1">
+                                  <Label htmlFor={setsArrayField.name}>
+                                    Sets
+                                  </Label>
+                                  <div
+                                    className={cn(
+                                      "grid gap-2",
+                                      timed
+                                        ? "grid-cols-5 lg:grid-cols-7"
+                                        : "grid-cols-7 lg:grid-cols-10",
+                                    )}
+                                  >
+                                    {setsArrayField.state.value.length > 0
+                                      ? setsArrayField.state.value.map(
+                                          (_, j) => (
+                                            <form.Field
+                                              // biome-ignore lint/suspicious/noArrayIndexKey: necessary for fields
+                                              key={j}
+                                              name={`exercises[${i}].sets[${j}].value`}
+                                            >
+                                              {(setField) => (
+                                                <Button
+                                                  variant="outline"
+                                                  size="icon"
+                                                  type="button"
+                                                  className={cn(
+                                                    timed && "w-full",
+                                                  )}
+                                                  id={setField.name}
+                                                  name={setField.name}
+                                                  onClick={() =>
+                                                    setField.state.value <= step
+                                                      ? setsArrayField.removeValue(
+                                                          j,
+                                                        )
+                                                      : setField.handleChange(
+                                                          setField.state.value -
+                                                            step,
+                                                        )
+                                                  }
+                                                  onContextMenu={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setField.handleChange(
+                                                      setField.state.value +
+                                                        step,
+                                                    );
+                                                  }}
+                                                >
+                                                  {formatSet(
+                                                    setField.state.value,
+                                                  )}
+                                                </Button>
+                                              )}
+                                            </form.Field>
+                                          ),
+                                        )
+                                      : null}
+                                    <form.AppField
+                                      name={`exercises[${i}].target`}
+                                    >
+                                      {(targetField) => (
+                                        <Button
+                                          variant="outline"
+                                          size="icon"
+                                          className={cn(timed && "w-full")}
+                                          onClick={() =>
+                                            setsArrayField.pushValue({
+                                              value: targetField.state.value,
+                                            })
+                                          }
+                                          type="button"
+                                        >
+                                          +
+                                        </Button>
+                                      )}
+                                    </form.AppField>
+                                  </div>
+                                </div>
+                              )}
+                            </form.AppField>
+                          </>
+                        );
+                      }}
+                    </form.Subscribe>
 
                     <div className="flex flex-row items-center gap-px">
                       {i > 0 ? (
@@ -480,7 +572,7 @@ export default function WorkoutForm({
                 onClick={() =>
                   exercisesArrayField.pushValue({
                     weight: 0,
-                    targetReps: 8,
+                    target: defaultTargets.reps,
                     notes: "",
                     exerciseTypeId: "",
                     sets: [],

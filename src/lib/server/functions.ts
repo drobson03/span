@@ -20,6 +20,8 @@ import { getUser } from "~/lib/server/auth/functions";
 import { db } from "~/lib/server/db";
 import {
   exercise,
+  type ExerciseMeasurement,
+  type InsertExercise,
   type Workout,
   type WorkoutWithRelations,
   workout as workoutTable,
@@ -196,10 +198,44 @@ export const getExerciseTypesQueryOptions = queryOptions({
 const WorkoutFormExerciseSchema = object({
   exerciseTypeId: string(),
   weight: string(),
-  targetReps: pipe(number(), minValue(0)),
+  // Reps or seconds, depending on the exercise type's measurement
+  target: pipe(number(), minValue(0)),
   notes: pipe(string(), maxLength(1000)),
-  sets: array(object({ reps: pipe(number(), minValue(0)) })),
+  sets: array(object({ value: pipe(number(), minValue(0)) })),
 });
+
+type WorkoutFormExercise = InferInput<typeof WorkoutFormExerciseSchema>;
+
+async function toExerciseRows(
+  workoutId: string,
+  exercises: WorkoutFormExercise[],
+): Promise<InsertExercise[]> {
+  const exerciseTypes = await db.query.exerciseType.findMany({
+    where: { id: { in: exercises.map((ex) => ex.exerciseTypeId) } },
+  });
+  const measurements = new Map(
+    exerciseTypes.map((exerciseType) => [
+      exerciseType.id,
+      exerciseType.measurement,
+    ]),
+  );
+
+  return exercises.map((ex) => {
+    const timed = measurements.get(ex.exerciseTypeId) === "time";
+
+    return {
+      workoutId,
+      exerciseTypeId: ex.exerciseTypeId,
+      weight: Number.parseFloat(ex.weight) || 0,
+      targetReps: timed ? null : ex.target,
+      targetSeconds: timed ? ex.target : null,
+      notes: ex.notes.length > 0 ? ex.notes : null,
+      sets: ex.sets.map((set) =>
+        timed ? { seconds: set.value } : { reps: set.value },
+      ),
+    };
+  });
+}
 
 const WorkoutFormCreateWorkoutDataSchema = object({
   action: literal("create"),
@@ -265,16 +301,7 @@ export const createWorkout = createServerFn({ method: "POST" })
 
     const exercises = await db
       .insert(exercise)
-      .values(
-        workout.exercises.map((exercise) => ({
-          workoutId,
-          exerciseTypeId: exercise.exerciseTypeId,
-          weight: Number.parseFloat(exercise.weight),
-          targetReps: exercise.targetReps,
-          notes: exercise.notes.length > 0 ? exercise.notes : null,
-          sets: exercise.sets,
-        })),
-      )
+      .values(await toExerciseRows(workoutId, workout.exercises))
       .returning({ id: exercise.id });
 
     if (exercises.length === 0) {
@@ -320,16 +347,7 @@ export const updateWorkout = createServerFn({ method: "POST" })
     if (workout.exercises.length > 0) {
       await db
         .insert(exercise)
-        .values(
-          workout.exercises.map((ex) => ({
-            workoutId: workout.id,
-            exerciseTypeId: ex.exerciseTypeId,
-            weight: Number.parseFloat(ex.weight),
-            targetReps: ex.targetReps,
-            notes: ex.notes || null,
-            sets: ex.sets,
-          })),
-        )
+        .values(await toExerciseRows(workout.id, workout.exercises))
         .returning({ id: exercise.id });
     }
   });
@@ -385,12 +403,15 @@ export type ExerciseProgressionData = {
   maxWeight: number;
   totalVolume: number;
   totalReps: number;
+  longestSet: number;
+  totalSeconds: number;
   sets: number;
 };
 
 export type ExerciseTypeProgression = {
   exerciseTypeId: string;
   exerciseTypeName: string;
+  measurement: ExerciseMeasurement;
   data: ExerciseProgressionData[];
 };
 
@@ -424,11 +445,22 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
           exerciseTypeMap.set(ex.exerciseTypeId, {
             exerciseTypeId: ex.exerciseTypeId,
             exerciseTypeName: ex.exerciseType.name,
+            measurement: ex.exerciseType.measurement,
             data: [],
           });
         }
 
-        const totalReps = ex.sets.reduce((sum, s) => sum + s.reps, 0);
+        let totalReps = 0;
+        let totalSeconds = 0;
+        let longestSet = 0;
+        for (const set of ex.sets) {
+          if ("seconds" in set) {
+            totalSeconds += set.seconds;
+            longestSet = Math.max(longestSet, set.seconds);
+          } else {
+            totalReps += set.reps;
+          }
+        }
         const totalVolume = totalReps * ex.weight;
 
         const progression = exerciseTypeMap.get(ex.exerciseTypeId)!;
@@ -441,6 +473,11 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
           );
           existingEntry.totalVolume += totalVolume;
           existingEntry.totalReps += totalReps;
+          existingEntry.longestSet = Math.max(
+            existingEntry.longestSet,
+            longestSet,
+          );
+          existingEntry.totalSeconds += totalSeconds;
           existingEntry.sets += ex.sets.length;
         } else {
           progression.data.push({
@@ -448,6 +485,8 @@ export const getExerciseProgression = createServerFn({ method: "GET" }).handler(
             maxWeight: ex.weight,
             totalVolume,
             totalReps,
+            longestSet,
+            totalSeconds,
             sets: ex.sets.length,
           });
         }

@@ -44,20 +44,26 @@ export type Workout = typeof workout.$inferSelect;
 
 export type InsertWorkout = typeof workout.$inferInsert;
 
+export const exerciseMeasurements = ["reps", "time"] as const;
+
+export type ExerciseMeasurement = (typeof exerciseMeasurements)[number];
+
 export const exerciseType = pgTable("exercise_type", {
   id: varchar("id", { length: 21 })
     .primaryKey()
     .$defaultFn(() => nanoid()),
   name: varchar("name").notNull(),
+  // Whether sets are counted in reps or held for a duration (e.g. plank)
+  measurement: text("measurement", { enum: exerciseMeasurements })
+    .notNull()
+    .default("reps"),
 });
 
 export type ExerciseType = typeof exerciseType.$inferSelect;
 
 export type InsertExerciseType = typeof exerciseType.$inferInsert;
 
-export type WorkoutSet = {
-  reps: number;
-};
+export type WorkoutSet = { reps: number } | { seconds: number };
 
 export const exercise = pgTable(
   "exercise",
@@ -65,7 +71,8 @@ export const exercise = pgTable(
     id: varchar("id", { length: 21 })
       .primaryKey()
       .$defaultFn(() => nanoid()),
-    targetReps: integer("target_reps").notNull(),
+    targetReps: integer("target_reps"),
+    targetSeconds: integer("target_seconds"),
     weight: real("weight").notNull(),
     notes: text("notes"),
     sets: jsonb("sets").$type<WorkoutSet[]>().notNull(),

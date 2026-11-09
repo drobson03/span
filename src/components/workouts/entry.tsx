@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { memo } from "react";
 import WorkoutMenu from "~/components/workouts/menu";
 import type { WorkoutWithRelations } from "~/lib/server/db/schema";
+import { cn, formatDuration } from "~/lib/utils";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 
@@ -35,31 +36,45 @@ export default memo(function WorkoutEntry({
         </div>
       )}
       <ul className="mt-2 space-y-2">
-        {workout.exercises.map((exercise) => (
-          <li key={exercise.id}>
-            <h3 className="text-xl font-semibold">
-              {exercise.exerciseType.name}
-            </h3>
-            <p className="text-muted-foreground">
-              {`${kgFormatter.format(exercise.weight)} kg`}
-            </p>
-            <p className="text-muted-foreground">{exercise.notes}</p>
-            <ul className="mt-2 flex flex-row gap-2">
-              {exercise.sets.map((set, i) => (
-                <Button
-                  // biome-ignore lint/suspicious/noArrayIndexKey: all we got
-                  key={i}
-                  asChild
-                  variant="outline"
-                  size="icon"
-                  className="hover:bg-background"
-                >
-                  <li>{set.reps}</li>
-                </Button>
-              ))}
-            </ul>
-          </li>
-        ))}
+        {workout.exercises.map((exercise) => {
+          const timed = exercise.exerciseType.measurement === "time";
+
+          return (
+            <li key={exercise.id}>
+              <h3 className="text-xl font-semibold">
+                {exercise.exerciseType.name}
+              </h3>
+              {/* Timed exercises are often bodyweight, so only show weight when added */}
+              {!timed || exercise.weight > 0 ? (
+                <p className="text-muted-foreground">
+                  {`${kgFormatter.format(exercise.weight)} kg`}
+                </p>
+              ) : null}
+              <p className="text-muted-foreground">{exercise.notes}</p>
+              <ul className="mt-2 flex flex-row flex-wrap gap-2">
+                {exercise.sets.map((set, i) => (
+                  <Button
+                    // biome-ignore lint/suspicious/noArrayIndexKey: all we got
+                    key={i}
+                    asChild
+                    variant="outline"
+                    size="icon"
+                    className={cn(
+                      "hover:bg-background",
+                      timed && "w-auto min-w-9 px-2",
+                    )}
+                  >
+                    <li>
+                      {"seconds" in set
+                        ? formatDuration(set.seconds)
+                        : set.reps}
+                    </li>
+                  </Button>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
