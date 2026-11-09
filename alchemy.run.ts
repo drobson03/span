@@ -38,6 +38,10 @@ export class Website extends Cloudflare.Website.Vite<Website>()(
 
     return {
       domain: hostname,
+      dev: {
+        port: 3000,
+        strictPort: true,
+      },
       env: {
         HYPERDRIVE: yield* Hyperdrive,
         BETTER_AUTH_URL: hostname ? `https://${hostname}` : LOCAL_URL,
