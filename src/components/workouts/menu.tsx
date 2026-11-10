@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { EditIcon, MoreVerticalIcon, TrashIcon } from "lucide-react";
+import { toast } from "sonner";
 import type { Workout } from "~/lib/server/db/schema";
 import { deleteWorkout } from "~/lib/server/functions";
 import { Button } from "../ui/button";
@@ -18,6 +19,9 @@ export default function WorkoutMenu({ workout }: { workout: Workout }) {
     mutationFn: async () => await deleteWorkout({ data: { id: workout.id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workouts"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

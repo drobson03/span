@@ -12,8 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedIndexRouteImport } from './routes/_authed.index'
+import { Route as AuthedAdminRouteImport } from './routes/_authed.admin'
 import { Route as AuthedAnalyticsRouteImport } from './routes/_authed.analytics'
 import { Route as AuthedWorkoutsRouteImport } from './routes/_authed.workouts'
+import { Route as AuthedAdminIndexRouteImport } from './routes/_authed.admin.index'
+import { Route as AuthedAdminExercisesRouteImport } from './routes/_authed.admin.exercises'
+import { Route as AuthedAdminUsersRouteImport } from './routes/_authed.admin.users'
 import { Route as AuthedCalendarSplatRouteImport } from './routes/_authed.calendar.$'
 import { Route as AuthedWorkoutsIndexRouteImport } from './routes/_authed.workouts.index'
 import { Route as AuthedWorkoutsNewRouteImport } from './routes/_authed.workouts.new'
@@ -34,6 +38,11 @@ const AuthedIndexRoute = AuthedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedAdminRoute = AuthedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedAnalyticsRoute = AuthedAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -43,6 +52,21 @@ const AuthedWorkoutsRoute = AuthedWorkoutsRouteImport.update({
   id: '/workouts',
   path: '/workouts',
   getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedAdminIndexRoute = AuthedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminExercisesRoute = AuthedAdminExercisesRouteImport.update({
+  id: '/exercises',
+  path: '/exercises',
+  getParentRoute: () => AuthedAdminRoute,
+} as any)
+const AuthedAdminUsersRoute = AuthedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthedAdminRoute,
 } as any)
 const AuthedCalendarSplatRoute = AuthedCalendarSplatRouteImport.update({
   id: '/calendar/$',
@@ -73,11 +97,15 @@ const AuthedWorkoutsEditIdRoute = AuthedWorkoutsEditIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AuthedAdminRouteWithChildren
   '/analytics': typeof AuthedAnalyticsRoute
   '/workouts': typeof AuthedWorkoutsRouteWithChildren
+  '/admin/exercises': typeof AuthedAdminExercisesRoute
+  '/admin/users': typeof AuthedAdminUsersRoute
   '/calendar/$': typeof AuthedCalendarSplatRoute
   '/workouts/new': typeof AuthedWorkoutsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin/': typeof AuthedAdminIndexRoute
   '/workouts/': typeof AuthedWorkoutsIndexRoute
   '/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
@@ -85,9 +113,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/analytics': typeof AuthedAnalyticsRoute
   '/': typeof AuthedIndexRoute
+  '/admin/exercises': typeof AuthedAdminExercisesRoute
+  '/admin/users': typeof AuthedAdminUsersRoute
   '/calendar/$': typeof AuthedCalendarSplatRoute
   '/workouts/new': typeof AuthedWorkoutsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/admin': typeof AuthedAdminIndexRoute
   '/workouts': typeof AuthedWorkoutsIndexRoute
   '/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
@@ -95,12 +126,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authed/admin': typeof AuthedAdminRouteWithChildren
   '/_authed/analytics': typeof AuthedAnalyticsRoute
   '/_authed/workouts': typeof AuthedWorkoutsRouteWithChildren
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/admin/exercises': typeof AuthedAdminExercisesRoute
+  '/_authed/admin/users': typeof AuthedAdminUsersRoute
   '/_authed/calendar/$': typeof AuthedCalendarSplatRoute
   '/_authed/workouts/new': typeof AuthedWorkoutsNewRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/_authed/workouts/': typeof AuthedWorkoutsIndexRoute
   '/_authed/workouts/edit/$id': typeof AuthedWorkoutsEditIdRoute
 }
@@ -109,11 +144,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/admin'
     | '/analytics'
     | '/workouts'
+    | '/admin/exercises'
+    | '/admin/users'
     | '/calendar/$'
     | '/workouts/new'
     | '/api/auth/$'
+    | '/admin/'
     | '/workouts/'
     | '/workouts/edit/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -121,21 +160,28 @@ export interface FileRouteTypes {
     | '/login'
     | '/analytics'
     | '/'
+    | '/admin/exercises'
+    | '/admin/users'
     | '/calendar/$'
     | '/workouts/new'
     | '/api/auth/$'
+    | '/admin'
     | '/workouts'
     | '/workouts/edit/$id'
   id:
     | '__root__'
     | '/_authed'
     | '/login'
+    | '/_authed/admin'
     | '/_authed/analytics'
     | '/_authed/workouts'
     | '/_authed/'
+    | '/_authed/admin/exercises'
+    | '/_authed/admin/users'
     | '/_authed/calendar/$'
     | '/_authed/workouts/new'
     | '/api/auth/$'
+    | '/_authed/admin/'
     | '/_authed/workouts/'
     | '/_authed/workouts/edit/$id'
   fileRoutesById: FileRoutesById
@@ -169,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/admin': {
+      id: '/_authed/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthedAdminRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/analytics': {
       id: '/_authed/analytics'
       path: '/analytics'
@@ -182,6 +235,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/workouts'
       preLoaderRoute: typeof AuthedWorkoutsRouteImport
       parentRoute: typeof AuthedRoute
+    }
+    '/_authed/admin/': {
+      id: '/_authed/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthedAdminIndexRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/exercises': {
+      id: '/_authed/admin/exercises'
+      path: '/exercises'
+      fullPath: '/admin/exercises'
+      preLoaderRoute: typeof AuthedAdminExercisesRouteImport
+      parentRoute: typeof AuthedAdminRoute
+    }
+    '/_authed/admin/users': {
+      id: '/_authed/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthedAdminUsersRouteImport
+      parentRoute: typeof AuthedAdminRoute
     }
     '/_authed/calendar/$': {
       id: '/_authed/calendar/$'
@@ -221,6 +295,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthedAdminRouteChildren {
+  AuthedAdminExercisesRoute: typeof AuthedAdminExercisesRoute
+  AuthedAdminUsersRoute: typeof AuthedAdminUsersRoute
+  AuthedAdminIndexRoute: typeof AuthedAdminIndexRoute
+}
+
+const AuthedAdminRouteChildren: AuthedAdminRouteChildren = {
+  AuthedAdminExercisesRoute: AuthedAdminExercisesRoute,
+  AuthedAdminUsersRoute: AuthedAdminUsersRoute,
+  AuthedAdminIndexRoute: AuthedAdminIndexRoute,
+}
+
+const AuthedAdminRouteWithChildren = AuthedAdminRoute._addFileChildren(
+  AuthedAdminRouteChildren,
+)
+
 interface AuthedWorkoutsRouteChildren {
   AuthedWorkoutsNewRoute: typeof AuthedWorkoutsNewRoute
   AuthedWorkoutsIndexRoute: typeof AuthedWorkoutsIndexRoute
@@ -238,6 +328,7 @@ const AuthedWorkoutsRouteWithChildren = AuthedWorkoutsRoute._addFileChildren(
 )
 
 interface AuthedRouteChildren {
+  AuthedAdminRoute: typeof AuthedAdminRouteWithChildren
   AuthedAnalyticsRoute: typeof AuthedAnalyticsRoute
   AuthedWorkoutsRoute: typeof AuthedWorkoutsRouteWithChildren
   AuthedIndexRoute: typeof AuthedIndexRoute
@@ -245,6 +336,7 @@ interface AuthedRouteChildren {
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedAdminRoute: AuthedAdminRouteWithChildren,
   AuthedAnalyticsRoute: AuthedAnalyticsRoute,
   AuthedWorkoutsRoute: AuthedWorkoutsRouteWithChildren,
   AuthedIndexRoute: AuthedIndexRoute,

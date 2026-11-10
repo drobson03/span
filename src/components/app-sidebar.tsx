@@ -1,18 +1,24 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, linkOptions } from "@tanstack/react-router";
 import {
   CalendarIcon,
   ChartBarIcon,
   DumbbellIcon,
   HomeIcon,
-  PlusIcon,
+  ListIcon,
   MoveUpRightIcon,
+  PlusIcon,
+  UsersIcon,
 } from "lucide-react";
+import { getUserQueryOptions } from "~/lib/server/auth/functions";
+import { isAdmin } from "~/lib/utils";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -48,7 +54,47 @@ const navItems = linkOptions([
   },
 ]);
 
+const adminNavItems = linkOptions([
+  {
+    title: "Exercises",
+    to: "/admin/exercises",
+    icon: ListIcon,
+  },
+  {
+    title: "Users",
+    to: "/admin/users",
+    icon: UsersIcon,
+  },
+]);
+
+function NavMenu({ items }: { items: typeof navItems | typeof adminNavItems }) {
+  return (
+    <SidebarMenu>
+      {items.map(({ title, icon: Icon, ...item }) => (
+        <SidebarMenuItem key={title}>
+          <SidebarMenuButton tooltip={title} asChild>
+            <Link
+              activeProps={{
+                "data-active": true,
+              }}
+              inactiveProps={{
+                "data-active": false,
+              }}
+              {...item}
+            >
+              {Icon && <Icon />}
+              <span>{title}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
+
 export default function AppSidebar() {
+  const { data: user } = useQuery(getUserQueryOptions);
+
   return (
     <Sidebar variant="inset">
       <SidebarHeader>
@@ -83,28 +129,17 @@ export default function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-            <SidebarMenu>
-              {navItems.map(({ title, icon: Icon, ...item }) => (
-                <SidebarMenuItem key={title}>
-                  <SidebarMenuButton tooltip={title} asChild>
-                    <Link
-                      activeProps={{
-                        "data-active": true,
-                      }}
-                      inactiveProps={{
-                        "data-active": false,
-                      }}
-                      {...item}
-                    >
-                      {Icon && <Icon />}
-                      <span>{title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <NavMenu items={navItems} />
           </SidebarGroupContent>
         </SidebarGroup>
+        {isAdmin(user) ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <NavMenu items={adminNavItems} />
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null}
       </SidebarContent>
       <SidebarFooter />
     </Sidebar>

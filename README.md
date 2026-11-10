@@ -88,6 +88,18 @@ The [Better Auth OAuth Proxy](https://better-auth.com/docs/plugins/oauth-proxy.m
 
 Production trusts `http://localhost:3000` and `https://span-*.darcyr.dev` to receive those sign-ins, so production must be reachable for local and preview sign-in to work.
 
+### Admins
+
+The [Better Auth admin plugin](https://better-auth.com/docs/plugins/admin) gives users with the `admin` role an **Admin** section in the sidebar, for managing the shared exercise list (`/admin/exercises`) and users (`/admin/users`). Exercises that have been logged can be renamed, but not deleted or switched between reps and timed, since deleting cascades to every user's logged sets.
+
+Admins can promote other users from the users page. To make the first one, set the role in the database:
+
+```sql
+update "user" set role = 'admin' where email = 'you@example.com';
+```
+
+Each Neon branch is a copy of production, so an admin promoted in production is also an admin on branches created afterwards.
+
 ## Scripts
 
 | Command                     | Description                                          |
