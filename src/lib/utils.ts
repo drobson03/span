@@ -26,3 +26,8 @@ export function formatDuration(totalSeconds: number) {
 export function getSetValue(set: { reps: number } | { seconds: number }) {
   return "seconds" in set ? set.seconds : set.reps;
 }
+
+/** Better Auth's admin plugin stores roles as a comma-separated list */
+export function isAdmin(user: { role?: string | null } | null | undefined) {
+  return user?.role?.split(",").includes("admin") ?? false;
+}

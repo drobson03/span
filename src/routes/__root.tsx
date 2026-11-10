@@ -1,11 +1,12 @@
 import type { QueryClient } from "@tanstack/react-query";
 import {
+  createRootRouteWithContext,
   HeadContent,
   Outlet,
   Scripts,
-  createRootRouteWithContext,
 } from "@tanstack/react-router";
 import tailwind from "~/app.css?url";
+import { Toaster } from "~/components/ui/sonner";
 import { getUser } from "~/lib/server/auth/functions";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
@@ -47,6 +48,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="dark min-h-dvh min-w-dvw">
         {children}
+        <Toaster />
         <Scripts />
       </body>
     </html>
