@@ -20,7 +20,7 @@ import {
   getExerciseTypesQueryOptions,
   updateWorkout,
 } from "~/lib/server/functions";
-import { cn, formatDuration, getSetValue } from "~/lib/utils";
+import { cn, getSetValue } from "~/lib/utils";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/kibo-ui/spinner";
 import { Label } from "../ui/label";
@@ -36,6 +36,7 @@ import {
   TagsItem,
 } from "../ui/kibo-ui/tags";
 import { CheckIcon, PlusIcon } from "lucide-react";
+import { SetEditor } from "./set-editor";
 
 const formSchema = v.object({
   datetime: v.date(),
@@ -60,12 +61,6 @@ type FormData = v.InferOutput<typeof formSchema>;
 const defaultTargets: Record<ExerciseMeasurement, number> = {
   reps: 8,
   time: 30,
-};
-
-// Timed sets are adjusted in coarser steps than reps
-const setSteps: Record<ExerciseMeasurement, number> = {
-  reps: 1,
-  time: 5,
 };
 
 const defaultTags = [
@@ -394,9 +389,6 @@ export default function WorkoutForm({
                     >
                       {(measurement: ExerciseMeasurement) => {
                         const timed = measurement === "time";
-                        const step = setSteps[measurement];
-                        const formatSet = (value: number) =>
-                          timed ? formatDuration(value) : value;
 
                         return (
                           <>
@@ -454,38 +446,19 @@ export default function WorkoutForm({
                                               name={`exercises[${i}].sets[${j}].value`}
                                             >
                                               {(setField) => (
-                                                <Button
-                                                  variant="outline"
-                                                  size="icon"
-                                                  type="button"
-                                                  className={cn(
-                                                    timed && "w-full",
-                                                  )}
-                                                  id={setField.name}
-                                                  name={setField.name}
-                                                  onClick={() =>
-                                                    setField.state.value <= step
-                                                      ? setsArrayField.removeValue(
-                                                          j,
-                                                        )
-                                                      : setField.handleChange(
-                                                          setField.state.value -
-                                                            step,
-                                                        )
+                                                <SetEditor
+                                                  index={j}
+                                                  value={setField.state.value}
+                                                  measurement={measurement}
+                                                  onChange={
+                                                    setField.handleChange
                                                   }
-                                                  onContextMenu={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    setField.handleChange(
-                                                      setField.state.value +
-                                                        step,
-                                                    );
-                                                  }}
-                                                >
-                                                  {formatSet(
-                                                    setField.state.value,
-                                                  )}
-                                                </Button>
+                                                  onRemove={() =>
+                                                    setsArrayField.removeValue(
+                                                      j,
+                                                    )
+                                                  }
+                                                />
                                               )}
                                             </form.Field>
                                           ),
